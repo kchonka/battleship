@@ -8,6 +8,11 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 ORANGE = (233, 159, 79)
 LIGHT_RED = (230, 90, 85)
+DARK_RED = (235, 52, 79)
+PURPLE = (147, 40, 173)
+TEAL = (0, 204, 204)
+LIGHT_YELLOW = (255, 255, 153)
+LIGHT_BLUE = (153, 153, 255)
 
 # Sizes:
 total_length = 660
@@ -37,8 +42,14 @@ while carryOn:
     # Coloring the screen:
     screen.fill(BLUE)
     # Rect(left, top, width, height) -> Rect
-    bottom = pygame.Rect(660, 0, 300, total_length)
-    screen.fill(LIGHT_RED, bottom)
+    side_bar = pygame.Rect(662, 0, 300, total_length)
+    screen.fill(PURPLE, side_bar)
+
+    x_axis = pygame.Rect(0, 0, board_width, 60)
+    y_axis = pygame.Rect(0, 0, 60, board_length)
+    screen.fill(LIGHT_BLUE, x_axis)
+    screen.fill(LIGHT_BLUE, y_axis)
+
     # Draw separation line:
     pygame.draw.line(screen, BLACK, [662, 0], [662, board_length], 5)
 
@@ -95,12 +106,14 @@ while carryOn:
     screen.blit(labelI, (560, 20))
     screen.blit(labelJ, (620, 20))
 
+    # Add Battleship Text to the top
+    logo_font = pygame.font.SysFont('Raleway', 50, bold=True)
+    logo = logo_font.render('Battleship', True, WHITE)
+    screen.blit(logo, (710, 20))
+
     # Add Text on the side
-    fleet = label_font.render('Your Fleet:', True, WHITE)
-    screen.blit(fleet, (730, 20))
-
-
-
+    #fleet = label_font.render('Your Fleet:', True, WHITE)
+    #screen.blit(fleet, (730, 20))
 
     # --- Go ahead and update the screen with what we've drawn.
     pygame.display.flip()
