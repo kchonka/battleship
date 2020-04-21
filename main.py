@@ -4,15 +4,13 @@ pygame.init()
 
 # Color definition:
 BLUE = (45, 145, 233)       # Blue for the background (to look like water)
+LIGHT_BLUE = (153, 153, 255)
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
-ORANGE = (233, 159, 79)
 LIGHT_RED = (230, 90, 85)
 DARK_RED = (235, 52, 79)
 PURPLE = (147, 40, 173)
-TEAL = (0, 204, 204)
 LIGHT_YELLOW = (255, 255, 153)
-LIGHT_BLUE = (153, 153, 255)
 
 # Sizes:
 total_length = 660
@@ -44,14 +42,37 @@ while carryOn:
     # Rect(left, top, width, height) -> Rect
     side_bar = pygame.Rect(662, 0, 300, total_length)
     screen.fill(PURPLE, side_bar)
+    pygame.draw.line(screen, BLACK, [662, 0], [662, board_length], 5)
 
+    # Horizontal & Vertical X and Y axis
     x_axis = pygame.Rect(0, 0, board_width, 60)
     y_axis = pygame.Rect(0, 0, 60, board_length)
     screen.fill(LIGHT_BLUE, x_axis)
     screen.fill(LIGHT_BLUE, y_axis)
 
-    # Draw separation line:
-    pygame.draw.line(screen, BLACK, [662, 0], [662, board_length], 5)
+    # Start Button:
+    start_button = pygame.Rect(680, 70, 260, 40)
+    screen.fill(LIGHT_YELLOW, start_button)
+    pygame.draw.line(screen, BLACK, [680, 70], [680, 110], 2)
+    pygame.draw.line(screen, BLACK, [680, 70], [940, 70], 2)
+    pygame.draw.line(screen, BLACK, [680, 110], [940, 110], 2)
+    pygame.draw.line(screen, BLACK, [940, 70], [940, 110], 2)
+
+    # Message box - section above the action box that tells you what to do
+    message_box = pygame.Rect(680, 125, 260, 60)
+    screen.fill(LIGHT_BLUE, message_box)
+    pygame.draw.line(screen, BLACK, [680, 125], [680, 185], 2)
+    pygame.draw.line(screen, BLACK, [680, 125], [940, 125], 2)
+    pygame.draw.line(screen, BLACK, [680, 185], [940, 185], 2)
+    pygame.draw.line(screen, BLACK, [940, 125], [940, 185], 2)
+
+    # "Action box"
+    action_box = pygame.Rect(680, 200, 260, 440)
+    screen.fill(LIGHT_BLUE, action_box)
+    pygame.draw.line(screen, BLACK, [680, 200], [680, 640], 2)
+    pygame.draw.line(screen, BLACK, [680, 200], [940, 200], 2)
+    pygame.draw.line(screen, BLACK, [940, 200], [940, 640], 2)
+    pygame.draw.line(screen, BLACK, [680, 640], [940, 640], 2)
 
     # *** DRAW SHAPES, LINES, COLORS, ETC. HERE ***
     # Draw vertical & horizontal lines: (Battleship rows
@@ -111,9 +132,12 @@ while carryOn:
     logo = logo_font.render('Battleship', True, WHITE)
     screen.blit(logo, (710, 20))
 
-    # Add Text on the side
-    #fleet = label_font.render('Your Fleet:', True, WHITE)
-    #screen.blit(fleet, (730, 20))
+    # Add start button logo
+    start_logo_font = pygame.font.Font('freesansbold.ttf', 20)
+    start_logo = start_logo_font.render('Start', True, BLACK)
+    screen.blit(start_logo, (780, 85))
+
+
 
     # --- Go ahead and update the screen with what we've drawn.
     pygame.display.flip()
@@ -121,5 +145,5 @@ while carryOn:
     # --- Limit to 60 frames per second
     clock.tick(60)
 
-# Once we have exited the main program loop we can stop the game engine:
+# End the game
 pygame.quit()
