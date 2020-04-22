@@ -3,7 +3,7 @@ import pygame
 pygame.init()
 
 # Color definition:
-BLUE = (45, 145, 233)       # Blue for the background (to look like water)
+BLUE = (45, 145, 233)
 LIGHT_BLUE = (153, 153, 255)
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -50,13 +50,26 @@ while carryOn:
     screen.fill(LIGHT_BLUE, x_axis)
     screen.fill(LIGHT_BLUE, y_axis)
 
-    # Start Button:
+    # START BUTTON:
     start_button = pygame.Rect(680, 70, 260, 40)
-    screen.fill(LIGHT_YELLOW, start_button)
+    mouse = pygame.mouse.get_pos()
+    click = pygame.mouse.get_pressed()
+    # Add colors (inactive color & hover color):
+    if 680 + 260 > mouse[0] > 680 and 70 + 40 > mouse[1] > 70:
+        pygame.draw.rect(screen, LIGHT_YELLOW, (680, 70, 260, 40))
+    else:
+        pygame.draw.rect(screen, LIGHT_RED, (680, 70, 260, 40))
     pygame.draw.line(screen, BLACK, [680, 70], [680, 110], 2)
     pygame.draw.line(screen, BLACK, [680, 70], [940, 70], 2)
     pygame.draw.line(screen, BLACK, [680, 110], [940, 110], 2)
     pygame.draw.line(screen, BLACK, [940, 70], [940, 110], 2)
+
+    # Add start button logo
+    start_logo_font = pygame.font.Font('freesansbold.ttf', 20)
+    start_logo = start_logo_font.render('Start', True, BLACK)
+    screen.blit(start_logo, (780, 85))
+    #if click[0] == 1:
+        # action after clicking
 
     # Message box - section above the action box that tells you what to do
     message_box = pygame.Rect(680, 125, 260, 60)
@@ -131,12 +144,6 @@ while carryOn:
     logo_font = pygame.font.SysFont('Raleway', 50, bold=True)
     logo = logo_font.render('Battleship', True, WHITE)
     screen.blit(logo, (710, 20))
-
-    # Add start button logo
-    start_logo_font = pygame.font.Font('freesansbold.ttf', 20)
-    start_logo = start_logo_font.render('Start', True, BLACK)
-    screen.blit(start_logo, (780, 85))
-
 
 
     # --- Go ahead and update the screen with what we've drawn.
