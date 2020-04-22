@@ -7,10 +7,12 @@ BLUE = (45, 145, 233)
 LIGHT_BLUE = (153, 153, 255)
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
+ORANGE = (232, 150, 19)
 LIGHT_RED = (230, 90, 85)
 DARK_RED = (235, 52, 79)
 PURPLE = (147, 40, 173)
 LIGHT_YELLOW = (255, 255, 153)
+YELLOW =  (247, 244, 25)
 
 # Sizes:
 total_length = 660
@@ -22,7 +24,21 @@ size = (total_width, total_length)  # (width, length)
 screen = pygame.display.set_mode(size)
 pygame.display.set_caption("Battleship")    # Name of the window/game
 
-# The loop will carry on until the user exit the game (e.g. clicks the close button).
+# Create the 5 ships:
+# Rect(left, top, width, height)
+carrier = pygame.rect.Rect(700, 210, 60, 300)
+battleship = pygame.rect.Rect(780, 210, 60, 240)
+cruiser = pygame.rect.Rect(860, 210, 60, 180)
+submarine = pygame.rect.Rect(740, 550, 180, 60)
+destroyer = pygame.rect.Rect(800, 470, 120, 60)
+
+# Add ships to a list
+ships = [carrier, battleship, cruiser, submarine, destroyer]
+
+rectangle_dragging = False
+selected = None
+
+# The loop will carry on until the user exit the game/clicks the close button
 carryOn = True
 
 # The clock will be used to control how fast the screen updates
@@ -32,11 +48,36 @@ clock = pygame.time.Clock()
 while carryOn:
     # --- Main event loop
     for event in pygame.event.get():  # User did something
+        # --- global events --------
         if event.type == pygame.QUIT:  # If user clicked close
             carryOn = False  # Flag that we are done so we exit this loop
 
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                carryOn = False
+
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1:
+                for i, r in enumerate(ships):
+                    if r.collidepoint(event.pos):
+                        selected = i
+                        selected_offset_x = r.x - event.pos[0]
+                        selected_offset_y = r.y - event.pos[1]
+
+        elif event.type == pygame.MOUSEBUTTONUP:
+            if event.button == 1:
+                selected = None
+
+        elif event.type == pygame.MOUSEMOTION:
+            if selected is not None:  # selected can be `0` so `is not None` is required
+                # move object
+                ships[selected].x = event.pos[0] + selected_offset_x
+                ships[selected].y = event.pos[1] + selected_offset_y
+
+
         # --- Game logic should go here
 
+    # Draws (without updates)
     # Coloring the screen:
     screen.fill(BLUE)
     # Rect(left, top, width, height) -> Rect
@@ -56,9 +97,9 @@ while carryOn:
     click = pygame.mouse.get_pressed()
     # Add colors (inactive color & hover color):
     if 680 + 260 > mouse[0] > 680 and 70 + 40 > mouse[1] > 70:
-        pygame.draw.rect(screen, LIGHT_YELLOW, (680, 70, 260, 40))
-    else:
         pygame.draw.rect(screen, LIGHT_RED, (680, 70, 260, 40))
+    else:
+        pygame.draw.rect(screen, LIGHT_YELLOW, (680, 70, 260, 40))
     pygame.draw.line(screen, BLACK, [680, 70], [680, 110], 2)
     pygame.draw.line(screen, BLACK, [680, 70], [940, 70], 2)
     pygame.draw.line(screen, BLACK, [680, 110], [940, 110], 2)
@@ -145,6 +186,11 @@ while carryOn:
     logo = logo_font.render('Battleship', True, WHITE)
     screen.blit(logo, (710, 20))
 
+    pygame.draw.rect(screen, YELLOW, carrier)
+    pygame.draw.rect(screen, YELLOW, battleship)
+    pygame.draw.rect(screen, YELLOW, cruiser)
+    pygame.draw.rect(screen, YELLOW, submarine)
+    pygame.draw.rect(screen, YELLOW, destroyer)
 
     # --- Go ahead and update the screen with what we've drawn.
     pygame.display.flip()
