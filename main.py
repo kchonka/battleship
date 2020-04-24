@@ -19,10 +19,11 @@ total_length = 660
 total_width = 960
 board_length = 660
 board_width = 660
+
 # Open a new window
-size = (total_width, total_length)  # (width, length)
+size = (total_width, total_length)
 screen = pygame.display.set_mode(size)
-pygame.display.set_caption("Battleship")    # Name of the window/game
+pygame.display.set_caption("Battleship")
 
 # Create the 5 ships:
 # Rect(left, top, width, height)
@@ -44,6 +45,8 @@ carryOn = True
 # The clock will be used to control how fast the screen updates
 clock = pygame.time.Clock()
 
+last_click = pygame.time.get_ticks()
+
 # -------- Main Program Loop -----------
 while carryOn:
     # --- Main event loop
@@ -57,12 +60,33 @@ while carryOn:
                 carryOn = False
 
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1:
+            now = pygame.time.get_ticks()
+            # SINGLE CLICK
+            if event.button == 1 and now-last_click > 500:
                 for i, r in enumerate(ships):
                     if r.collidepoint(event.pos):
                         selected = i
                         selected_offset_x = r.x - event.pos[0]
                         selected_offset_y = r.y - event.pos[1]
+
+            if event.button == 1 and now - last_click <= 500:
+                # DOUBLE CLICK:
+                # Rotate the double-clicked on ship
+                x = event.pos[0]    # current mouse x coordinate
+                y = event.pos[1]    # current mouse y coordinate
+
+                for ship in ships:
+                    width = ship.width
+                    height = ship.height
+                    left = ship.left
+                    top = ship.top
+                    # If the current mouse position is within a ships's coordinates, rotate it
+                    if left < x < left+width and top < y < top+height:
+                        # Redefine the ship, switching the width and height
+                        ship.height = width
+                        ship.width = height
+
+            last_click = pygame.time.get_ticks()    # Store the time of the last click
 
         elif event.type == pygame.MOUSEBUTTONUP:
             if event.button == 1:
@@ -71,8 +95,11 @@ while carryOn:
         elif event.type == pygame.MOUSEMOTION:
             if selected is not None:  # selected can be `0` so `is not None` is required
                 # move object
+                # event.pos[0] = x axis position
+                # event.pos[1] = y axis position
                 ships[selected].x = event.pos[0] + selected_offset_x
                 ships[selected].y = event.pos[1] + selected_offset_y
+
 
 
         # --- Game logic should go here
@@ -135,7 +162,7 @@ while carryOn:
         pygame.draw.line(screen, WHITE, [pos, 0], [pos, board_length], 2)
         pygame.draw.line(screen, WHITE, [0, pos], [board_width, pos], 2)
 
-    # Add labels:
+    # Labels for x & y axis:
     pygame.font.init()
     label_font = pygame.font.Font('freesansbold.ttf', 30)
     # Vertical labels (Rows 1-10):
