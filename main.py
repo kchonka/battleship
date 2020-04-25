@@ -2,6 +2,19 @@
 import pygame
 pygame.init()
 
+
+# Realigns the ships to the boxes so they are aligned to the rows & cols
+# Takes in a ship (Rect) object
+def realign(ship):
+    x = ship.x
+    y = ship.y
+    new_x = 60 * round(x / 60)
+    new_y = 60 * round(y / 60)
+    ship.x = new_x
+    ship.y = new_y
+    # Add logic to make sure the ships do not overlap **
+    # Add logic to make sure the ships do not go outside the board boundaries
+
 # Color definition:
 BLUE = (45, 145, 233)
 LIGHT_BLUE = (153, 153, 255)
@@ -82,7 +95,7 @@ while carryOn:
                     top = ship.top
                     # If the current mouse position is within a ships's coordinates, rotate it
                     if left < x < left+width and top < y < top+height:
-                        # Redefine the ship, switching the width and height
+                        # Rotating the ship by switching the width and height
                         ship.height = width
                         ship.width = height
 
@@ -99,8 +112,7 @@ while carryOn:
                 # event.pos[1] = y axis position
                 ships[selected].x = event.pos[0] + selected_offset_x
                 ships[selected].y = event.pos[1] + selected_offset_y
-
-
+                realign(ships[selected])
 
         # --- Game logic should go here
 
@@ -227,3 +239,42 @@ while carryOn:
 
 # End the game
 pygame.quit()
+
+
+# Function that converts a ship's x/y coordinates to the row/col coordinates
+# RETURNS A LIST OF ALL THE BOARD BLOCKS THAT CONTAIN A SHIP
+def get_ship_coordinates():
+
+    coordinates = []
+
+    for ship in ships:
+        x = ship.x
+        y = ship.y
+        width = ship.width
+        height = ship.height
+
+        new_x = 60 * round(x/60)
+        new_y = 60 * round(y/60)
+        start_row = new_x / 60
+        start_col = new_y / 60
+        width_in_boxes = int(width / 60)
+        height_in_boxes = int(height / 60)
+
+        # Ship is horizontal
+        if height_in_boxes == 1:
+            for i in range(height_in_boxes):
+                row = start_row
+                col = start_col + 1
+                new_pair = [row, col]
+                coordinates.append(new_pair)
+        else:  # Ship is vertical (width_in_boxes == 1)
+            for i in range(width_in_boxes):
+                row = start_row + 1
+                col = start_col
+                new_pair = [row, col]
+                coordinates.append(new_pair)
+    return coordinates
+
+
+
+
