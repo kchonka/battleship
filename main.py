@@ -115,6 +115,11 @@ while carryOn:
                 realign(ships[selected])
 
         # --- Game logic should go here
+        # If user presses start - make sure that all the board pieces are in the correct place, then start game
+        # Return all the coordinates of the user's ships - save to object
+        # Have the AI place all of its ships
+        # loop until
+
 
     # Draws (without updates)
     # Coloring the screen:
@@ -242,38 +247,54 @@ pygame.quit()
 
 
 # Function that converts a ship's x/y coordinates to the row/col coordinates
-# RETURNS A LIST OF ALL THE BOARD BLOCKS THAT CONTAIN A SHIP
-def get_ship_coordinates():
+# RETURNS A LIST OF ALL THE BOARD BLOCKS THAT CONTAIN THE GIVEN SHIP
+def get_ship_coordinates(ship):
 
     coordinates = []
 
-    for ship in ships:
-        x = ship.x
-        y = ship.y
-        width = ship.width
-        height = ship.height
+    x = ship.x
+    y = ship.y
+    width = ship.width
+    height = ship.height
 
-        new_x = 60 * round(x/60)
-        new_y = 60 * round(y/60)
-        start_row = new_x / 60
-        start_col = new_y / 60
-        width_in_boxes = int(width / 60)
-        height_in_boxes = int(height / 60)
+    new_x = int(60 * round(x/60))
+    new_y = int(60 * round(y/60))
+    start_row = int(new_x / 60)
+    start_col = int(new_y / 60)
+    width_in_boxes = int(width / 60)
+    height_in_boxes = int(height / 60)
 
-        # Ship is horizontal
-        if height_in_boxes == 1:
-            for i in range(height_in_boxes):
-                row = start_row
-                col = start_col + 1
-                new_pair = [row, col]
-                coordinates.append(new_pair)
-        else:  # Ship is vertical (width_in_boxes == 1)
-            for i in range(width_in_boxes):
-                row = start_row + 1
-                col = start_col
-                new_pair = [row, col]
-                coordinates.append(new_pair)
+    # Ship is horizontal
+    if height_in_boxes == 1:
+        for i in range(height_in_boxes):
+            row = start_row
+            col = start_col + 1
+            new_pair = [row, col]
+            coordinates.append(new_pair)
+    else:  # Ship is vertical (width_in_boxes == 1)
+        for i in range(width_in_boxes):
+            row = start_row + 1
+            col = start_col
+            new_pair = [row, col]
+            coordinates.append(new_pair)
+
     return coordinates
+
+
+# Converts the pixel coordinates to the equivalent Battleship board coordinates
+# Returns a list [row, col]
+def convert_coordinates(pixel_x, pixel_y):
+    board_coordinates = []
+
+    rounded_x = int(60 * round(pixel_x / 60))
+    rounded_y = int(60 * round(pixel_y / 60))
+    row = int(rounded_x / 60)
+    col = int(rounded_y / 60)
+
+    board_coordinates.append(row)
+    board_coordinates.append(col)
+
+    return board_coordinates
 
 
 

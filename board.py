@@ -1,20 +1,62 @@
 # Class representing a board object
 # Both the player and AI classes will use this class as their board
 
+from enum import Enum
+
 HEIGHT = 10
 WIDTH = 10
 
-'''
-0 = EMPTY CELL
-1 = CELL WITH HIDDEN SHIP PIECE
-2 = A MISS (CELL THAT WAS EMPTY AND HIT)
-3 = A HIT (CELL WITH A SHIP THAT WAS ATTACKED)
-'''
+
+class Cell(Enum):
+    EMPTY = 0       # EMPTY CELL
+    HIDDEN = 1      # CELL WITH A HIDDEN SHIP PIECE
+    MISS = 2        # A MISS (CELL THAT WAS EMPTY AND HIT)
+    HIT = 3         # A HIT (CELL WITH A SHIP THAT WAS HIT / SUCCESSFULLY ATTACKED)
+
 
 class Board:
     def __init__(self):
-        self.board = [[0 for x in range(WIDTH)] for y in range(HEIGHT)]
+        self.board = [[Cell.EMPTY for x in range(WIDTH)] for y in range(HEIGHT)]
 
+    # Updates the board for a hidden ship
+    # Takes in a list of coordinates for a ship
+    def add_ship(self, coordinates):
+        # Update the coordinates on the board
+        for pair in coordinates:
+            x = pair[0]
+            y = pair[1]
+            self.board[x][y] = Cell.HIDDEN
+
+    # Given a ships coordinates, checks to see whether the ship was sunk entirely
+    # Returns 'True' if the ship was sunk, 'False' if not
+    def is_ship_sunk(self, coordinates):
+        # Checks if a ship is entirely sunk
+        sunk = True
+
+        for pair in coordinates:
+            row = pair[0]
+            col = pair[1]
+            if self.board[row][col] != Cell.HIT:
+                sunk = False
+                return sunk
+        return sunk
+
+    # Returns the state of the board (Empty, hidden, missed, hit)
+    def get_state(self, row, col):
+        return self.board[row][col]
+
+    # Updates the board at [row][col], returns the new state
+    def update(self, row, col):
+        state = self.board[row][col]
+
+        if state == Cell.EMPTY:
+            self.board[row][col] = Cell.MISS    # If current state is EMPTY --> update to a MISS
+        elif state == Cell.HIDDEN:
+            self.board[row][col] = Cell.HIT     # If current state is HIDDEN SHIP --> update to a HIT
+
+        return self.board[row][col]
+
+    # Outputs a board representation to the stdout console
     def print_board(self):
         for x in range(WIDTH):
             for y in range(HEIGHT):
@@ -27,10 +69,4 @@ class Board:
                 elif self.board[x][y] == 3:
                     print("S")  # Hit
 
-    def update(self, x, y, change):
-        self.board[x][y] == change
-
-
-new_board = Board()
-print(new_board)
 
