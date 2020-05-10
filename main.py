@@ -1,5 +1,9 @@
 # Main Battleship game file
+# This file contains the UI display code along with the game logic.
 import pygame
+from board import Board, Cell
+from player import Player
+from AI import AI
 pygame.init()
 
 
@@ -41,7 +45,7 @@ LIGHT_RED = (230, 90, 85)
 DARK_RED = (235, 52, 79)
 PURPLE = (147, 40, 173)
 LIGHT_YELLOW = (255, 255, 153)
-YELLOW =  (247, 244, 25)
+YELLOW = (247, 244, 25)
 
 # Sizes:
 total_length = 660
@@ -74,6 +78,10 @@ carryOn = True
 # Boolean variable to denote that the game is in the setup portion:
 setup = True
 
+# Boolean variables to denote who's turn it is:
+player_turn = True
+AI_turn = False
+
 # The clock will be used to control how fast the screen updates
 clock = pygame.time.Clock()
 
@@ -84,22 +92,24 @@ while carryOn:
     if setup:
         # --- Setup event loop
         for event in pygame.event.get():  # User did something
-            # --- global events --------
             if event.type == pygame.QUIT:  # If user clicked close
                 carryOn = False  # Flag that we are done so we exit this loop
-
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     carryOn = False
-
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                # If the start button is pressed:
+                # IF 'START' BUTTON IS PRESSED:
                 if event.button == 1 and 680 < event.pos[0] < 940 and 70 < event.pos[1] < 110:
                     # Verify that the all the ships are on the board
                     # Then setup = False to switch to a new set of events
                     if check_setup(ships):
+                        # If nothing is wrong with the setup, proceed to the AI turn
                         setup = False
-
+                        AI_turn = True
+                        player_turn = False
+                    else:
+                        # Display incorrect set-up message in the message box:
+                        setup_error_message = True
                 # SINGLE CLICK
                 now = pygame.time.get_ticks()
                 if event.button == 1 and now-last_click > 500:
@@ -108,13 +118,11 @@ while carryOn:
                             selected = i
                             selected_offset_x = r.x - event.pos[0]
                             selected_offset_y = r.y - event.pos[1]
-
                 if event.button == 1 and now - last_click <= 500:
                     # DOUBLE CLICK:
                     # Rotate the double-clicked on ship
                     x = event.pos[0]    # current mouse x coordinate
                     y = event.pos[1]    # current mouse y coordinate
-
                     for ship in ships:
                         width = ship.width
                         height = ship.height
@@ -125,13 +133,10 @@ while carryOn:
                             # Rotating the ship by switching the width and height
                             ship.height = width
                             ship.width = height
-
                 last_click = pygame.time.get_ticks()    # Store the time of the last click
-
             elif event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1:
                     selected = None
-
             elif event.type == pygame.MOUSEMOTION:
                 if selected is not None:  # selected can be 0 so not None is needed
                     # move object
@@ -148,9 +153,11 @@ while carryOn:
 
     # --- Game logic should go here
     # If user presses start - make sure that all the board pieces are in the correct place, then start game
-    # Return all the coordinates of the user's ships - save to object
-    # Have the AI place all of its ships
-    # loop until
+    if not setup:
+        pass
+        # Return all the coordinates of the user's ships - save to object
+        # If player turn:
+        # If AI turn:
 
     # Draws (without updates)
     # Coloring the screen:
@@ -261,11 +268,54 @@ while carryOn:
     logo = logo_font.render('Battleship', True, WHITE)
     screen.blit(logo, (710, 20))
 
-    pygame.draw.rect(screen, YELLOW, carrier)
-    pygame.draw.rect(screen, YELLOW, battleship)
-    pygame.draw.rect(screen, YELLOW, cruiser)
-    pygame.draw.rect(screen, YELLOW, submarine)
-    pygame.draw.rect(screen, YELLOW, destroyer)
+    if setup or AI_turn:
+        pygame.draw.rect(screen, YELLOW, carrier)
+        pygame.draw.rect(screen, YELLOW, battleship)
+        pygame.draw.rect(screen, YELLOW, cruiser)
+        pygame.draw.rect(screen, YELLOW, submarine)
+        pygame.draw.rect(screen, YELLOW, destroyer)
+
+    # Update who's turn it is in the message box:
+    if player_turn:
+        message_font = pygame.font.Font('freesansbold.ttf', 20)
+        message = "Your turn"
+        message_text = message_font.render(message, True, BLACK)
+        message_rect = message_text.get_rect(center = (message_box.center))
+        screen.blit(message_text, message_rect)
+    else:
+        message_font = pygame.font.Font('freesansbold.ttf', 20)
+        message = "AI's turn"
+        message_text = message_font.render(message, True, BLACK)
+        message_rect = message_text.get_rect(center=(message_box.center))
+        screen.blit(message_text, message_rect)
+
+    '''
+    # Update the messages in the message box:
+    if start_message:
+        message_font = pygame.font.Font('freesansbold.ttf', 16)
+        message1 = "To start, place your ships on the"
+        message_display1 = message_font.render(message1, True, BLACK)
+        screen.blit(message_display1, (690, 135))
+        message2 = "grid. Double click to rotate."
+        message_display1 = message_font.render(message2, True, BLACK)
+        screen.blit(message_display1, (690, 155))
+    elif setup_error_message:
+        message_font = pygame.font.Font('freesansbold.ttf', 16)
+        message1 = "The ships are not all in the grid."
+        message_display1 = message_font.render(message1, True, BLACK)
+        screen.blit(message_display1, (690, 135))
+        message2 = "Rearrange them & press start."
+        message_display1 = message_font.render(message2, True, BLACK)
+        screen.blit(message_display1, (690, 155))
+    elif player_turn_message:
+        message_font = pygame.font.Font('freesansbold.ttf', 16)
+        message1 = "Your turn. Fire at the AI's"
+        message_display1 = message_font.render(message1, True, BLACK)
+        screen.blit(message_display1, (690, 135))
+        message2 = "fleet."
+        message_display1 = message_font.render(message2, True, BLACK)
+        screen.blit(message_display1, (690, 155))
+    '''
 
     # --- Go ahead and update the screen with what we've drawn.
     pygame.display.flip()
