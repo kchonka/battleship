@@ -15,6 +15,22 @@ def realign(ship):
     # Add logic to make sure the ships do not overlap **
     # Add logic to make sure the ships do not go outside the board boundaries
 
+
+# Checks to make sure that all the ships are in the right spaces on the grid to start the game
+def check_setup(ships):
+    for ship in ships:
+        if ship.left < 60:
+            return False
+        if ship.left + ship.width > 660:
+            return False
+        if ship.top < 60:
+            return False
+        if ship.top + ship.height > 660:
+            return False
+
+    return True
+
+
 # Color definition:
 BLUE = (45, 145, 233)
 LIGHT_BLUE = (153, 153, 255)
@@ -30,8 +46,8 @@ YELLOW =  (247, 244, 25)
 # Sizes:
 total_length = 660
 total_width = 960
-board_length = 660
-board_width = 660
+board_length = 660  # 'board' refers only to the section with the grid
+board_width = 660   # 'board' refers only to the section with the grid
 
 # Open a new window
 size = (total_width, total_length)
@@ -55,6 +71,9 @@ selected = None
 # The loop will carry on until the user exit the game/clicks the close button
 carryOn = True
 
+# Boolean variable to denote that the game is in the setup portion:
+setup = True
+
 # The clock will be used to control how fast the screen updates
 clock = pygame.time.Clock()
 
@@ -62,64 +81,76 @@ last_click = pygame.time.get_ticks()
 
 # -------- Main Program Loop -----------
 while carryOn:
-    # --- Main event loop
-    for event in pygame.event.get():  # User did something
-        # --- global events --------
-        if event.type == pygame.QUIT:  # If user clicked close
-            carryOn = False  # Flag that we are done so we exit this loop
+    if setup:
+        # --- Setup event loop
+        for event in pygame.event.get():  # User did something
+            # --- global events --------
+            if event.type == pygame.QUIT:  # If user clicked close
+                carryOn = False  # Flag that we are done so we exit this loop
 
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                carryOn = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    carryOn = False
 
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            now = pygame.time.get_ticks()
-            # SINGLE CLICK
-            if event.button == 1 and now-last_click > 500:
-                for i, r in enumerate(ships):
-                    if r.collidepoint(event.pos):
-                        selected = i
-                        selected_offset_x = r.x - event.pos[0]
-                        selected_offset_y = r.y - event.pos[1]
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                # If the start button is pressed:
+                if event.button == 1 and 680 < event.pos[0] < 940 and 70 < event.pos[1] < 110:
+                    # Verify that the all the ships are on the board
+                    # Then setup = False to switch to a new set of events
+                    if check_setup(ships):
+                        setup = False
 
-            if event.button == 1 and now - last_click <= 500:
-                # DOUBLE CLICK:
-                # Rotate the double-clicked on ship
-                x = event.pos[0]    # current mouse x coordinate
-                y = event.pos[1]    # current mouse y coordinate
+                # SINGLE CLICK
+                now = pygame.time.get_ticks()
+                if event.button == 1 and now-last_click > 500:
+                    for i, r in enumerate(ships):
+                        if r.collidepoint(event.pos):
+                            selected = i
+                            selected_offset_x = r.x - event.pos[0]
+                            selected_offset_y = r.y - event.pos[1]
 
-                for ship in ships:
-                    width = ship.width
-                    height = ship.height
-                    left = ship.left
-                    top = ship.top
-                    # If the current mouse position is within a ships's coordinates, rotate it
-                    if left < x < left+width and top < y < top+height:
-                        # Rotating the ship by switching the width and height
-                        ship.height = width
-                        ship.width = height
+                if event.button == 1 and now - last_click <= 500:
+                    # DOUBLE CLICK:
+                    # Rotate the double-clicked on ship
+                    x = event.pos[0]    # current mouse x coordinate
+                    y = event.pos[1]    # current mouse y coordinate
 
-            last_click = pygame.time.get_ticks()    # Store the time of the last click
+                    for ship in ships:
+                        width = ship.width
+                        height = ship.height
+                        left = ship.left
+                        top = ship.top
+                        # If the current mouse position is within a ships's coordinates, rotate it
+                        if left < x < left+width and top < y < top+height:
+                            # Rotating the ship by switching the width and height
+                            ship.height = width
+                            ship.width = height
 
-        elif event.type == pygame.MOUSEBUTTONUP:
-            if event.button == 1:
-                selected = None
+                last_click = pygame.time.get_ticks()    # Store the time of the last click
 
-        elif event.type == pygame.MOUSEMOTION:
-            if selected is not None:  # selected can be `0` so `is not None` is required
-                # move object
-                # event.pos[0] = x axis position
-                # event.pos[1] = y axis position
-                ships[selected].x = event.pos[0] + selected_offset_x
-                ships[selected].y = event.pos[1] + selected_offset_y
-                realign(ships[selected])
+            elif event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 1:
+                    selected = None
 
-        # --- Game logic should go here
-        # If user presses start - make sure that all the board pieces are in the correct place, then start game
-        # Return all the coordinates of the user's ships - save to object
-        # Have the AI place all of its ships
-        # loop until
+            elif event.type == pygame.MOUSEMOTION:
+                if selected is not None:  # selected can be 0 so not None is needed
+                    # move object
+                    # event.pos[0] = x axis position
+                    # event.pos[1] = y axis position
+                    ships[selected].x = event.pos[0] + selected_offset_x
+                    ships[selected].y = event.pos[1] + selected_offset_y
+                    realign(ships[selected])
+    # Game in progress (after user presses start:
+    elif not setup:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:  # If user clicked close
+                carryOn = False  # Flag that we are done so we exit this loop
 
+    # --- Game logic should go here
+    # If user presses start - make sure that all the board pieces are in the correct place, then start game
+    # Return all the coordinates of the user's ships - save to object
+    # Have the AI place all of its ships
+    # loop until
 
     # Draws (without updates)
     # Coloring the screen:
@@ -281,7 +312,7 @@ def get_ship_coordinates(ship):
     return coordinates
 
 
-# Converts the pixel coordinates to the equivalent Battleship board coordinates
+# Converts the pixel coordinates to the equivalent Battleship grid coordinates
 # Returns a list [row, col]
 def convert_coordinates(pixel_x, pixel_y):
     board_coordinates = []
