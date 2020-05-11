@@ -3,9 +3,10 @@
 
 from enum import Enum
 
-HEIGHT = 10
-WIDTH = 10
+HEIGHT = 11
+WIDTH = 11
 
+# 10 row x 10 cols for the game, but row 0 & col 0 are unused / off limits = 11 x 11
 
 class Cell(Enum):
     EMPTY = 0       # EMPTY CELL
@@ -45,16 +46,18 @@ class Board:
     def get_state(self, row, col):
         return self.board[row][col]
 
-    # Updates the board at [row][col], returns the new state
-    def update(self, row, col):
+    # Shoot at [row][col]
+    # Checks the current state at those coordinates, updates, and returns the new state
+    def shoot(self, row, col):
         state = self.board[row][col]
 
+        # Checks the current state of the block:
         if state == Cell.EMPTY:
             self.board[row][col] = Cell.MISS    # If current state is EMPTY --> update to a MISS
         elif state == Cell.HIDDEN:
             self.board[row][col] = Cell.HIT     # If current state is HIDDEN SHIP --> update to a HIT
 
-        return self.board[row][col]
+        return self.board[row][col]             # Return the updated board state
 
     # Outputs a board representation to the stdout console
     def print_board(self):

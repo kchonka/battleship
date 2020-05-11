@@ -35,6 +35,59 @@ def check_setup(ships):
     return True
 
 
+# Function that converts a ship's x/y coordinates to the row/col coordinates
+# RETURNS A LIST OF ALL THE BOARD BLOCKS THAT CONTAIN THE GIVEN SHIP
+# RETURNS A LIST OF ALL THE BOARD BLOCKS THAT CONTAIN THE GIVEN SHIP
+def get_ship_coordinates(ship):
+    coordinates = []
+
+    x = ship.x
+    y = ship.y
+    width = ship.width
+    height = ship.height
+
+    new_x = int(60 * round(x / 60))
+    new_y = int(60 * round(y / 60))
+    start_row = int(new_y / 60)
+    start_col = int(new_x / 60)
+
+    grid_width = int(width / 60)
+    grid_height = int(height / 60)
+
+    # Ship is horizontal
+    if grid_height == 1:
+        for i in range(grid_width):
+            row = start_row
+            col = start_col + i
+            new_pair = [col, row]  # Has to be in the reverse, x denotes cols, y denotes rows
+            coordinates.append(new_pair)
+    else:  # Ship is vertical (grid_width == 1)
+        for i in range(grid_height):
+            row = start_row + i
+            col = start_col
+            new_pair = [col, row]
+            coordinates.append(new_pair)
+
+    return coordinates
+
+
+# Converts the pixel coordinates to the equivalent Battleship grid coordinates
+# Used when a user clicks on a certain space --> to get the grid coordinates of the space pressed
+# Returns a list [row, col]
+def convert_coordinates(pixel_x, pixel_y):
+    board_coordinates = []
+
+    rounded_x = int(60 * round(pixel_x / 60))
+    rounded_y = int(60 * round(pixel_y / 60))
+    row = int(rounded_x / 60)
+    col = int(rounded_y / 60)
+
+    board_coordinates.append(row)
+    board_coordinates.append(col)
+
+    return board_coordinates
+
+
 # Color definition:
 BLUE = (45, 145, 233)
 LIGHT_BLUE = (153, 153, 255)
@@ -85,12 +138,18 @@ AI_turn = False
 # The clock will be used to control how fast the screen updates
 clock = pygame.time.Clock()
 
+# For double click timing:
 last_click = pygame.time.get_ticks()
+
+# Global variables:
+player = Player()
+AI = AI()
+player_shots = []   # List of all the shots the player has already taken (to prevent repeats)
 
 # -------- Main Program Loop -----------
 while carryOn:
     if setup:
-        # --- Setup event loop
+        # --- Setup event loop: These events
         for event in pygame.event.get():  # User did something
             if event.type == pygame.QUIT:  # If user clicked close
                 carryOn = False  # Flag that we are done so we exit this loop
@@ -107,6 +166,10 @@ while carryOn:
                         setup = False
                         AI_turn = True
                         player_turn = False
+                        # Return all the coordinates of the user's ships - save to object
+                        for ship in ships:
+                            ship_coordinates = get_ship_coordinates(ship)
+                            player.place_ship(ship_coordinates)
                     else:
                         # Display incorrect set-up message in the message box:
                         setup_error_message = True
@@ -145,19 +208,26 @@ while carryOn:
                     ships[selected].x = event.pos[0] + selected_offset_x
                     ships[selected].y = event.pos[1] + selected_offset_y
                     realign(ships[selected])
-    # Game in progress (after user presses start:
+    # Game in progress (after user presses start):
     elif not setup:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:  # If user clicked close
                 carryOn = False  # Flag that we are done so we exit this loop
+            # If it's the player's turn and they press on a square that hasn't been pressed before:
+            elif player_turn and event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    coordinates = convert_coordinates(event.pos[0], event.pos[1])
+                    if coordinates not in player_shots:
+                        pass
+                        # Take a shot
 
     # --- Game logic should go here
     # If user presses start - make sure that all the board pieces are in the correct place, then start game
     if not setup:
-        pass
-        # Return all the coordinates of the user's ships - save to object
-        # If player turn:
-        # If AI turn:
+        if AI_turn:
+            pass
+        if player_turn:
+            pass
 
     # Draws (without updates)
     # Coloring the screen:
@@ -325,58 +395,6 @@ while carryOn:
 
 # End the game
 pygame.quit()
-
-
-# Function that converts a ship's x/y coordinates to the row/col coordinates
-# RETURNS A LIST OF ALL THE BOARD BLOCKS THAT CONTAIN THE GIVEN SHIP
-def get_ship_coordinates(ship):
-
-    coordinates = []
-
-    x = ship.x
-    y = ship.y
-    width = ship.width
-    height = ship.height
-
-    new_x = int(60 * round(x/60))
-    new_y = int(60 * round(y/60))
-    start_row = int(new_x / 60)
-    start_col = int(new_y / 60)
-    width_in_boxes = int(width / 60)
-    height_in_boxes = int(height / 60)
-
-    # Ship is horizontal
-    if height_in_boxes == 1:
-        for i in range(height_in_boxes):
-            row = start_row
-            col = start_col + 1
-            new_pair = [row, col]
-            coordinates.append(new_pair)
-    else:  # Ship is vertical (width_in_boxes == 1)
-        for i in range(width_in_boxes):
-            row = start_row + 1
-            col = start_col
-            new_pair = [row, col]
-            coordinates.append(new_pair)
-
-    return coordinates
-
-
-# Converts the pixel coordinates to the equivalent Battleship grid coordinates
-# Returns a list [row, col]
-def convert_coordinates(pixel_x, pixel_y):
-    board_coordinates = []
-
-    rounded_x = int(60 * round(pixel_x / 60))
-    rounded_y = int(60 * round(pixel_y / 60))
-    row = int(rounded_x / 60)
-    col = int(rounded_y / 60)
-
-    board_coordinates.append(row)
-    board_coordinates.append(col)
-
-    return board_coordinates
-
 
 
 
