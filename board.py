@@ -8,6 +8,7 @@ WIDTH = 11
 
 # 10 row x 10 cols for the game, but row 0 & col 0 are unused / off limits = 11 x 11
 
+
 class Cell(Enum):
     EMPTY = 0       # EMPTY CELL
     HIDDEN = 1      # CELL WITH A HIDDEN SHIP PIECE
@@ -18,6 +19,10 @@ class Cell(Enum):
 class Board:
     def __init__(self):
         self.board = [[Cell.EMPTY for x in range(WIDTH)] for y in range(HEIGHT)]
+
+    # Returns the array matrix with all the states:
+    def get_board(self):
+        return self.board
 
     # Updates the board for a hidden ship
     # Takes in a list of coordinates for a ship

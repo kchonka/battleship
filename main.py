@@ -6,6 +6,29 @@ from player import Player
 from AI import AI
 pygame.init()
 
+# Color definition:
+BLUE = (45, 145, 233)
+LIGHT_BLUE = (153, 153, 255)
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+ORANGE = (232, 150, 19)
+LIGHT_RED = (230, 90, 85)
+DARK_RED = (235, 52, 79)
+PURPLE = (147, 40, 173)
+LIGHT_YELLOW = (255, 255, 153)
+YELLOW = (247, 244, 25)
+GREEN = (0, 128, 0)
+
+# Sizes:
+total_length = 660
+total_width = 960
+board_length = 660  # 'board' refers only to the section with the grid
+board_width = 660   # 'board' refers only to the section with the grid
+
+# Open a new window
+size = (total_width, total_length)
+screen = pygame.display.set_mode(size)
+pygame.display.set_caption("Battleship")
 
 # Realigns the ships to the boxes so they are aligned to the rows & cols
 # Takes in a ship (Rect) object
@@ -74,7 +97,7 @@ def get_ship_coordinates(ship):
 # Converts the pixel coordinates to the equivalent Battleship grid coordinates
 # Used when a user clicks on a certain space --> to get the grid coordinates of the space pressed
 # Returns a list [row, col]
-def convert_coordinates(pixel_x, pixel_y):
+def convert_pixel_coordinates(pixel_x, pixel_y):
     board_coordinates = []
 
     rounded_x = int(60 * round(pixel_x / 60))
@@ -87,29 +110,37 @@ def convert_coordinates(pixel_x, pixel_y):
 
     return board_coordinates
 
+# Converts a row / col on the grid to the corresponding pixel rectangle and returns it
+def convert_grid_coordinates(row, col):
+    row = row * 60
+    col = col * 60
 
-# Color definition:
-BLUE = (45, 145, 233)
-LIGHT_BLUE = (153, 153, 255)
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-ORANGE = (232, 150, 19)
-LIGHT_RED = (230, 90, 85)
-DARK_RED = (235, 52, 79)
-PURPLE = (147, 40, 173)
-LIGHT_YELLOW = (255, 255, 153)
-YELLOW = (247, 244, 25)
+    square = pygame.rect.Rect(row, col, 60, 60)
+    return square
 
-# Sizes:
-total_length = 660
-total_width = 960
-board_length = 660  # 'board' refers only to the section with the grid
-board_width = 660   # 'board' refers only to the section with the grid
 
-# Open a new window
-size = (total_width, total_length)
-screen = pygame.display.set_mode(size)
-pygame.display.set_caption("Battleship")
+# Takes a list pair of grid coordinates and a state
+# Converts grid coordinates to pixel coordinates, colors the space with the new state
+def color_board(coordinates, state):
+    row = coordinates[0] * 60
+    col = coordinates[1] * 60
+
+    square = pygame.rect.Rect(row, col, 60, 60)
+    if state == Cell.MISS:
+        pygame.draw.rect(screen, GREEN, square)
+    elif state == Cell.HIT:
+        pygame.draw.rect(screen, DARK_RED, square)
+
+def waitFor(waitTime): # waitTime in milliseconds
+    screenCopy = screen.copy()
+    waitCount = 0
+    while waitCount < waitTime:
+        dt = clock.tick(60) # 60 is your FPS here
+        waitCount += dt
+        pygame.event.pump() # Tells pygame to handle it's event, instead of pygame.event.get()
+        screen.blit(screenCopy, (0,0))
+        pygame.display.flip()
+
 
 # Create the 5 ships:
 # Rect(left, top, width, height)
@@ -143,8 +174,9 @@ last_click = pygame.time.get_ticks()
 
 # Global variables:
 player = Player()
+player_board = Board()
+AI_board = Board()
 AI = AI()
-player_shots = []   # List of all the shots the player has already taken (to prevent repeats)
 
 # -------- Main Program Loop -----------
 while carryOn:
@@ -159,20 +191,21 @@ while carryOn:
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 # IF 'START' BUTTON IS PRESSED:
                 if event.button == 1 and 680 < event.pos[0] < 940 and 70 < event.pos[1] < 110:
+
                     # Verify that the all the ships are on the board
                     # Then setup = False to switch to a new set of events
+                    # If nothing is wrong with the setup, proceed to the AI turn
                     if check_setup(ships):
-                        # If nothing is wrong with the setup, proceed to the AI turn
                         setup = False
                         AI_turn = True
                         player_turn = False
                         # Return all the coordinates of the user's ships - save to object
                         for ship in ships:
                             ship_coordinates = get_ship_coordinates(ship)
-                            player.place_ship(ship_coordinates)
-                    else:
-                        # Display incorrect set-up message in the message box:
-                        setup_error_message = True
+                            player_board.add_ship(ship_coordinates)
+                        # Place the AI's ships:
+                        AI.random_placement()
+
                 # SINGLE CLICK
                 now = pygame.time.get_ticks()
                 if event.button == 1 and now-last_click > 500:
@@ -203,8 +236,6 @@ while carryOn:
             elif event.type == pygame.MOUSEMOTION:
                 if selected is not None:  # selected can be 0 so not None is needed
                     # move object
-                    # event.pos[0] = x axis position
-                    # event.pos[1] = y axis position
                     ships[selected].x = event.pos[0] + selected_offset_x
                     ships[selected].y = event.pos[1] + selected_offset_y
                     realign(ships[selected])
@@ -213,26 +244,98 @@ while carryOn:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:  # If user clicked close
                 carryOn = False  # Flag that we are done so we exit this loop
-            # If it's the player's turn and they press on a square that hasn't been pressed before:
+
+            # If it's the player's turn and they press on a square that hasn't been pressed before: take a shot
             elif player_turn and event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    coordinates = convert_coordinates(event.pos[0], event.pos[1])
-                    if coordinates not in player_shots:
-                        pass
-                        # Take a shot
+                    coordinates = convert_pixel_coordinates(event.pos[0], event.pos[1])
+                    # Take a shot
+                    AI_board.shoot(coordinates[0], coordinates[1])
+                    # update display
+                    board_array = AI_board.get_board()
+                    row = 1
+                    col = 1
+
+                    for row in range(11):
+                        for col in range(11):
+                            grid_cell = convert_grid_coordinates(row, col)
+
+                            if board_array[row][col] == Cell.EMPTY:
+                                pygame.draw.rect(screen, BLUE, grid_cell)
+                            elif board_array[row][col] == Cell.MISS:
+                                pygame.draw.rect(screen, GREEN, grid_cell)
+                            elif board_array[row][col] == Cell.HIT:
+                                pygame.draw.rect(screen, DARK_RED, grid_cell)
+                            col += 1
+                        row += 1
+
+                    #Update turn:
+                    player_turn = False
+                    AI_turn = True
 
     # --- Game logic should go here
     # If user presses start - make sure that all the board pieces are in the correct place, then start game
     if not setup:
         if AI_turn:
-            pass
-        if player_turn:
-            pass
+            # Update the display:
+            board_array = player_board.get_board()
+            row = 1
+            col = 1
+            for row in range(11):
+                for col in range(11):
+                    grid_cell = convert_grid_coordinates(row, col)
+
+                    if board_array[row][col] == Cell.EMPTY:
+                        pygame.draw.rect(screen, BLUE, grid_cell)
+                    elif board_array[row][col] == Cell.MISS:
+                        pygame.draw.rect(screen, GREEN, grid_cell)
+                    elif board_array[row][col] == Cell.HIT:
+                        pygame.draw.rect(screen, DARK_RED, grid_cell)
+                    col += 1
+                row += 1
+
+            waitFor(300)
+
+            # Shoot:
+            row, col, new_state = AI.random_attack(player_board)
+            grid_cell = convert_grid_coordinates(row, col)
+
+            if board_array[row][col] == Cell.EMPTY:
+                pygame.draw.rect(screen, BLUE, grid_cell)
+            elif board_array[row][col] == Cell.MISS:
+                pygame.draw.rect(screen, GREEN, grid_cell)
+            elif board_array[row][col] == Cell.HIT:
+                pygame.draw.rect(screen, DARK_RED, grid_cell)
+
+            # Update turn:
+            player_turn = True
+            AI_turn = False
+
+        else:
+            # update display
+            board_array = AI_board.get_board()
+            row = 1
+            col = 1
+
+            for row in range(11):
+                for col in range(11):
+                    grid_cell = convert_grid_coordinates(row, col)
+
+                    if board_array[row][col] == Cell.EMPTY:
+                        pygame.draw.rect(screen, BLUE, grid_cell)
+                    elif board_array[row][col] == Cell.MISS:
+                        pygame.draw.rect(screen, GREEN, grid_cell)
+                    elif board_array[row][col] == Cell.HIT:
+                        pygame.draw.rect(screen, DARK_RED, grid_cell)
+                    col += 1
+                row += 1
 
     # Draws (without updates)
-    # Coloring the screen:
-    screen.fill(BLUE)
-    # Rect(left, top, width, height) -> Rect
+
+    grid_space = pygame.Rect(60, 60, 660, 660)
+    if setup:
+        pygame.draw.rect(screen, BLUE, grid_space)
+
     side_bar = pygame.Rect(662, 0, 300, total_length)
     screen.fill(PURPLE, side_bar)
     pygame.draw.line(screen, BLACK, [662, 0], [662, board_length], 5)
@@ -333,17 +436,17 @@ while carryOn:
     screen.blit(labelI, (560, 20))
     screen.blit(labelJ, (620, 20))
 
-    # Add Battleship Text to the top
-    logo_font = pygame.font.SysFont('Raleway', 50, bold=True)
-    logo = logo_font.render('Battleship', True, WHITE)
-    screen.blit(logo, (710, 20))
-
     if setup or AI_turn:
         pygame.draw.rect(screen, YELLOW, carrier)
         pygame.draw.rect(screen, YELLOW, battleship)
         pygame.draw.rect(screen, YELLOW, cruiser)
         pygame.draw.rect(screen, YELLOW, submarine)
         pygame.draw.rect(screen, YELLOW, destroyer)
+
+    # Add Battleship Text to the top
+    logo_font = pygame.font.SysFont('Raleway', 50, bold=True)
+    logo = logo_font.render('Battleship', True, WHITE)
+    screen.blit(logo, (710, 20))
 
     # Update who's turn it is in the message box:
     if player_turn:
@@ -359,34 +462,6 @@ while carryOn:
         message_rect = message_text.get_rect(center=(message_box.center))
         screen.blit(message_text, message_rect)
 
-    '''
-    # Update the messages in the message box:
-    if start_message:
-        message_font = pygame.font.Font('freesansbold.ttf', 16)
-        message1 = "To start, place your ships on the"
-        message_display1 = message_font.render(message1, True, BLACK)
-        screen.blit(message_display1, (690, 135))
-        message2 = "grid. Double click to rotate."
-        message_display1 = message_font.render(message2, True, BLACK)
-        screen.blit(message_display1, (690, 155))
-    elif setup_error_message:
-        message_font = pygame.font.Font('freesansbold.ttf', 16)
-        message1 = "The ships are not all in the grid."
-        message_display1 = message_font.render(message1, True, BLACK)
-        screen.blit(message_display1, (690, 135))
-        message2 = "Rearrange them & press start."
-        message_display1 = message_font.render(message2, True, BLACK)
-        screen.blit(message_display1, (690, 155))
-    elif player_turn_message:
-        message_font = pygame.font.Font('freesansbold.ttf', 16)
-        message1 = "Your turn. Fire at the AI's"
-        message_display1 = message_font.render(message1, True, BLACK)
-        screen.blit(message_display1, (690, 135))
-        message2 = "fleet."
-        message_display1 = message_font.render(message2, True, BLACK)
-        screen.blit(message_display1, (690, 155))
-    '''
-
     # --- Go ahead and update the screen with what we've drawn.
     pygame.display.flip()
 
@@ -395,6 +470,3 @@ while carryOn:
 
 # End the game
 pygame.quit()
-
-
-
