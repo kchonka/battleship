@@ -84,6 +84,9 @@ class AI:
                 if new_coordinates not in self.moves:
                     self.moves.append(new_coordinates)
                     return new_coordinates[0], new_coordinates[1]
+                else:
+                    self.attackUDLR(new_coordinates, direction)
+
             else:   # moving up not possible, increment direction
                 self.ship.increment_direction()
                 direction = self.ship.get_direction()
@@ -96,6 +99,8 @@ class AI:
                 if new_coordinates not in self.moves:
                     self.moves.append(new_coordinates)
                     return new_coordinates[0], new_coordinates[1]
+                else:
+                    self.attackUDLR(new_coordinates, direction)
             else:
                 self.ship.increment_direction()
                 direction = self.ship.get_direction()
@@ -108,6 +113,8 @@ class AI:
                 if new_coordinates not in self.moves:
                     self.moves.append(new_coordinates)
                     return new_coordinates[0], new_coordinates[1]
+                else:
+                    self.attackUDLR(new_coordinates, direction)
             else:
                 self.ship.increment_direction()
                 direction = self.ship.get_direction()
@@ -118,6 +125,8 @@ class AI:
             if new_coordinates not in self.moves:
                 self.moves.append(new_coordinates)
                 return new_coordinates[0], new_coordinates[1]
+            else:
+                self.attackUDLR(new_coordinates, direction)
 
     # Takes in one argument: The state of the last attack
     def random_attack(self, last_move_state):
