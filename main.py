@@ -1,9 +1,11 @@
 # Main Battleship game file
 # This file contains the UI display code along with the game logic.
 import pygame
+import math
 from board import Board, Cell
 from player import Player
 from AI import AI
+
 pygame.init()
 
 # Color definition:
@@ -30,6 +32,23 @@ size = (total_width, total_length)
 screen = pygame.display.set_mode(size)
 pygame.display.set_caption("Battleship")
 
+# Create the 5 ships (rectangular objects):
+# Rect(left, top, width, height)
+carrier = pygame.rect.Rect(700, 210, 60, 300)
+battleship = pygame.rect.Rect(780, 210, 60, 240)
+cruiser = pygame.rect.Rect(860, 210, 60, 180)
+submarine = pygame.rect.Rect(740, 550, 180, 60)
+destroyer = pygame.rect.Rect(800, 470, 120, 60)
+
+# Add ships to a list
+ships = [carrier, battleship, cruiser, submarine, destroyer]
+
+# Declare other rect objects:
+message_box = pygame.Rect(680, 125, 260, 60)    # Section below the start button; displays whose turn it is
+action_box = pygame.Rect(680, 200, 260, 440)    # Section below the message box; holds ships at the start
+
+last_AI_attack = None       # The result of the last AI attack (hit, miss, etc.)
+last_player_attack = None   # The result of the last player attack (hit, miss, etc.)
 
 # Realigns the ships to the boxes so they are aligned to the rows & cols
 # Takes in a ship (Rect) object
@@ -101,8 +120,8 @@ def get_ship_coordinates(ship):
 def convert_pixel_coordinates(pixel_x, pixel_y):
     board_coordinates = []
 
-    rounded_x = int(60 * round(pixel_x / 60))
-    rounded_y = int(60 * round(pixel_y / 60))
+    rounded_x = int(60 * math.floor(pixel_x / 60))
+    rounded_y = int(60 * math.floor(pixel_y / 60))
     row = int(rounded_x / 60)
     col = int(rounded_y / 60)
 
@@ -193,10 +212,27 @@ def draw_grid_labels():
     screen.blit(labelI, (560, 20))
     screen.blit(labelJ, (620, 20))
 
+
+# Colors the part of the UI below the start button to display whose turn it is
+def color_message_box():
+    screen.fill(LIGHT_BLUE, message_box)
+    pygame.draw.line(screen, BLACK, [680, 125], [680, 185], 2)
+    pygame.draw.line(screen, BLACK, [680, 125], [940, 125], 2)
+    pygame.draw.line(screen, BLACK, [680, 185], [940, 185], 2)
+    pygame.draw.line(screen, BLACK, [940, 125], [940, 185], 2)
+
+
+# Colors the section below the message box that holds the ships at the start
+def color_action_box():
+    screen.fill(LIGHT_BLUE, action_box)
+    pygame.draw.line(screen, BLACK, [680, 200], [680, 640], 2)
+    pygame.draw.line(screen, BLACK, [680, 200], [940, 200], 2)
+    pygame.draw.line(screen, BLACK, [940, 200], [940, 640], 2)
+    pygame.draw.line(screen, BLACK, [680, 640], [940, 640], 2)
+
+
 # Update the grid display for when it's the player's turn
 def update_player_grid(board_array):
-    row = 1
-    col = 1
     for row in range(1, 11):
         for col in range(1, 11):
             grid_cell = convert_grid_coordinates(row, col)
@@ -206,16 +242,14 @@ def update_player_grid(board_array):
             elif board_array[row][col] == Cell.MISS:
                 pygame.draw.rect(screen, GREEN, grid_cell)
             elif board_array[row][col] == Cell.HIT:
+                pygame.draw.rect(screen, ORANGE, grid_cell)
+            elif board_array[row][col] == Cell.SUNK:
                 pygame.draw.rect(screen, DARK_RED, grid_cell)
-            col += 1
-        row += 1
     draw_grid_labels()
 
 
 # Update the grid display for when it's the AI's turn:
 def update_AI_grid(board_array):
-    row = 1
-    col = 1
     for row in range(1, 11):
         for col in range(1, 11):
             grid_cell = convert_grid_coordinates(row, col)
@@ -227,9 +261,10 @@ def update_AI_grid(board_array):
             elif board_array[row][col] == Cell.MISS:
                 pygame.draw.rect(screen, GREEN, grid_cell)
             elif board_array[row][col] == Cell.HIT:
+                pygame.draw.rect(screen, ORANGE, grid_cell)
+            elif board_array[row][col] == Cell.SUNK:
                 pygame.draw.rect(screen, DARK_RED, grid_cell)
-            col += 1
-        row += 1
+
     draw_grid_labels()
 
 
@@ -244,17 +279,6 @@ def wait_for(wait_time):
         screen.blit(screen_copy, (0, 0))
         pygame.display.flip()
 
-
-# Create the 5 ships:
-# Rect(left, top, width, height)
-carrier = pygame.rect.Rect(700, 210, 60, 300)
-battleship = pygame.rect.Rect(780, 210, 60, 240)
-cruiser = pygame.rect.Rect(860, 210, 60, 180)
-submarine = pygame.rect.Rect(740, 550, 180, 60)
-destroyer = pygame.rect.Rect(800, 470, 120, 60)
-
-# Add ships to a list
-ships = [carrier, battleship, cruiser, submarine, destroyer]
 
 rectangle_dragging = False
 selected = None
@@ -303,10 +327,21 @@ while carryOn:
                         # Return all the coordinates of the user's ships - save to object
                         for ship in ships:
                             ship_coordinates = get_ship_coordinates(ship)
-                            player.add_ship(ship_coordinates)
+                            ship_name = ""
+                            if ship == carrier:
+                                ship_name = "carrier"
+                            elif ship == battleship:
+                                ship_name = "battleship"
+                            elif ship == cruiser:
+                                ship_name = "cruiser"
+                            elif ship == submarine:
+                                ship_name = "submarine"
+                            elif ship == destroyer:
+                                ship_name = "destroyer"
+                            player.add_ship(ship_name, ship_coordinates)
+
                         # Place the AI's ships:
                         AI.random_placement()
-                        print(player.print_all_ship_coordinates())
 
                 # SINGLE CLICK
                 now = pygame.time.get_ticks()
@@ -353,39 +388,69 @@ while carryOn:
                     coordinates = convert_pixel_coordinates(event.pos[0], event.pos[1])
                     # Take a shot
                     AI.suffer_attack(coordinates)
+                    # Check for sunken ships:
+                    AI.check_sunken_ships()
                     # Update display
                     board_array = AI.get_board()
                     update_player_grid(board_array)
-
                     wait_for(1000)
-
-                    #Update turn:
-                    player_turn = False
-                    AI_turn = True
+                    # Update turn: If last turn was a hit or sink, go again
+                    if last_player_attack == Cell.HIT or last_player_attack == Cell.SUNK:
+                        player_turn = True
+                        AI_turn = False
+                    else:
+                        player_turn = False
+                        AI_turn = True
 
     # --- Game logic should go here
     # If user presses start - make sure that all the board pieces are in the correct place, then start game
     if not setup:
         if AI_turn:
+            # Update message box:
+            color_message_box()
+            message_font = pygame.font.Font('freesansbold.ttf', 20)
+            message = "AI's turn"
+            message_text = message_font.render(message, True, BLACK)
+            message_rect = message_text.get_rect(center=(message_box.center))
+            screen.blit(message_text, message_rect)
+
             board_array = player.get_board()
             update_AI_grid(board_array)
             # Shoot:
-            row, col = AI.random_attack()
-            player.suffer_attack(row, col)
+            row, col = AI.random_attack(last_AI_attack)
+            last_AI_attack = player.suffer_attack(row, col)
+            # Check for sunken ships:
+            player.check_sunken_ships()
             # Update display:
             board_array = player.get_board()
             update_AI_grid(board_array)
-            # Update turn:
-            player_turn = True
-            AI_turn = False
+            # Update turn: If last turn was a hit or sink, go again
+            if last_AI_attack == Cell.HIT or last_player_attack == Cell.SUNK:
+                AI_turn = True
+                player_turn = False
+            else:
+                player_turn = True
+                AI_turn = False
 
-            wait_for(1000)
+            wait_for(1500)
+
         else:
+            # Update message box:
+            color_message_box()
+            message_font = pygame.font.Font('freesansbold.ttf', 20)
+            message = "Your turn"
+            message_text = message_font.render(message, True, BLACK)
+            message_rect = message_text.get_rect(center=(message_box.center))
+            screen.blit(message_text, message_rect)
+
             board_array = AI.get_board()
             update_player_grid(board_array)
 
+            if last_player_attack == Cell.HIT or last_player_attack == Cell.SUNK:
+                player_turn = True
+                AI_turn = False
 
-    # Draws (without updates)
+    # Draws & fills (without updates):
     grid_space = pygame.Rect(60, 60, 660, 660)
     if setup:
         pygame.draw.rect(screen, BLUE, grid_space)
@@ -418,25 +483,9 @@ while carryOn:
     start_logo_font = pygame.font.Font('freesansbold.ttf', 20)
     start_logo = start_logo_font.render('Start', True, BLACK)
     screen.blit(start_logo, (780, 85))
-    #if click[0] == 1:
-        # action after clicking
 
-    # Message box - section above the action box that tells you what to do
-    message_box = pygame.Rect(680, 125, 260, 60)
-    screen.fill(LIGHT_BLUE, message_box)
-    pygame.draw.line(screen, BLACK, [680, 125], [680, 185], 2)
-    pygame.draw.line(screen, BLACK, [680, 125], [940, 125], 2)
-    pygame.draw.line(screen, BLACK, [680, 185], [940, 185], 2)
-    pygame.draw.line(screen, BLACK, [940, 125], [940, 185], 2)
-
-    # "Action box"
-    action_box = pygame.Rect(680, 200, 260, 440)
-    screen.fill(LIGHT_BLUE, action_box)
-    pygame.draw.line(screen, BLACK, [680, 200], [680, 640], 2)
-    pygame.draw.line(screen, BLACK, [680, 200], [940, 200], 2)
-    pygame.draw.line(screen, BLACK, [940, 200], [940, 640], 2)
-    pygame.draw.line(screen, BLACK, [680, 640], [940, 640], 2)
-
+    color_message_box()
+    color_action_box()
     draw_grid_labels()
 
     if setup or AI_turn:
@@ -451,16 +500,16 @@ while carryOn:
     logo = logo_font.render('Battleship', True, WHITE)
     screen.blit(logo, (710, 20))
 
-    # Update who's turn it is in the message box:
-    if player_turn:
+    # Display start message:
+    if setup:
+        message_font = pygame.font.Font('freesansbold.ttf', 17)
+        message = "Hide your ships & press start."
+        message_text = message_font.render(message, True, BLACK)
+        message_rect = message_text.get_rect(center=(message_box.center))
+        screen.blit(message_text, message_rect)
+    elif player_turn:
         message_font = pygame.font.Font('freesansbold.ttf', 20)
         message = "Your turn"
-        message_text = message_font.render(message, True, BLACK)
-        message_rect = message_text.get_rect(center = (message_box.center))
-        screen.blit(message_text, message_rect)
-    else:
-        message_font = pygame.font.Font('freesansbold.ttf', 20)
-        message = "AI's turn"
         message_text = message_font.render(message, True, BLACK)
         message_rect = message_text.get_rect(center=(message_box.center))
         screen.blit(message_text, message_rect)

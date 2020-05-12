@@ -2,7 +2,6 @@
 # Both the player and AI classes will use this class as their board
 
 from enum import Enum
-
 HEIGHT = 11
 WIDTH = 11
 
@@ -14,11 +13,13 @@ class Cell(Enum):
     HIDDEN = 1      # CELL WITH A HIDDEN SHIP PIECE
     MISS = 2        # A MISS (CELL THAT WAS EMPTY AND HIT)
     HIT = 3         # A HIT (CELL WITH A SHIP THAT WAS HIT / SUCCESSFULLY ATTACKED)
+    SUNK = 4        # A SHIP THAT WAS FULLY HIT / SUNK
 
 
 class Board:
     def __init__(self):
         self.board = [[Cell.EMPTY for x in range(WIDTH)] for y in range(HEIGHT)]
+        self.ships = {"battleship": None, "carrier": None, "cruiser": None, "submarine": None, "destroyer": None}
 
     # Returns the array matrix with all the states:
     def get_board(self):
@@ -26,28 +27,36 @@ class Board:
 
     # Updates the board for a hidden ship
     # Takes in a list of coordinates for a ship
-    def add_ship(self, coordinates):
+    def add_ship(self, name, coordinates):
         # Update the coordinates on the board
         for pair in coordinates:
             x = pair[0]
             y = pair[1]
             self.board[x][y] = Cell.HIDDEN
 
-    # Given a ships coordinates, checks to see whether the ship was sunk entirely
+        self.ships[name] = coordinates
+
+    # Given a ship's name, checks to see whether the ship was sunk entirely
+    # If sunk, updates the hits on the board to sunk (HIT --> SUNK)
     # Returns 'True' if the ship was sunk, 'False' if not
-    def is_ship_sunk(self, coordinates):
-        # Checks if a ship is entirely sunk
-        sunk = True
+    def check_sunken_ships(self):
+        for name in self.ships.keys():
+            sunk = True
+            coordinates = self.ships[name]
+            if coordinates is not None:
+                for pair in coordinates:
+                    row = pair[0]
+                    col = pair[1]
+                    if self.board[row][col] != Cell.HIT:
+                        sunk = False
+                        break
+                if sunk:    # Update board if sunk
+                    for pair in coordinates:
+                        row = pair[0]
+                        col = pair[1]
+                        self.board[row][col] = Cell.SUNK
 
-        for pair in coordinates:
-            row = pair[0]
-            col = pair[1]
-            if self.board[row][col] != Cell.HIT:
-                sunk = False
-                return sunk
-        return sunk
-
-    # Returns the state of the board (Empty, hidden, missed, hit)
+    # Returns the state of the board (Empty, hidden, missed, hit, sunk)
     def get_state(self, row, col):
         return self.board[row][col]
 
