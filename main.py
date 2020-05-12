@@ -30,6 +30,7 @@ size = (total_width, total_length)
 screen = pygame.display.set_mode(size)
 pygame.display.set_caption("Battleship")
 
+
 # Realigns the ships to the boxes so they are aligned to the rows & cols
 # Takes in a ship (Rect) object
 def realign(ship):
@@ -110,6 +111,7 @@ def convert_pixel_coordinates(pixel_x, pixel_y):
 
     return board_coordinates
 
+
 # Converts a row / col on the grid to the corresponding pixel rectangle and returns it
 def convert_grid_coordinates(row, col):
     row = row * 60
@@ -131,14 +133,115 @@ def color_board(coordinates, state):
     elif state == Cell.HIT:
         pygame.draw.rect(screen, DARK_RED, square)
 
-def waitFor(waitTime): # waitTime in milliseconds
-    screenCopy = screen.copy()
-    waitCount = 0
-    while waitCount < waitTime:
-        dt = clock.tick(60) # 60 is your FPS here
-        waitCount += dt
-        pygame.event.pump() # Tells pygame to handle it's event, instead of pygame.event.get()
-        screen.blit(screenCopy, (0,0))
+
+def draw_grid_labels():
+    # Horizontal & Vertical X and Y axis
+    x_axis = pygame.Rect(0, 0, board_width, 60)
+    y_axis = pygame.Rect(0, 0, 60, board_length)
+    screen.fill(LIGHT_BLUE, x_axis)
+    screen.fill(LIGHT_BLUE, y_axis)
+
+    # Draw vertical & horizontal lines: (Battleship rows
+    for x in range(11):
+        pos = (x + 1) * 60
+        pygame.draw.line(screen, WHITE, [pos, 0], [pos, board_length], 2)
+        pygame.draw.line(screen, WHITE, [0, pos], [board_width, pos], 2)
+
+    # Labels for x & y axis:
+    pygame.font.init()
+    label_font = pygame.font.Font('freesansbold.ttf', 30)
+    # Vertical labels (Rows 1-10):
+    label1 = label_font.render('1', True, BLACK)
+    label2 = label_font.render('2', True, BLACK)
+    label3 = label_font.render('3', True, BLACK)
+    label4 = label_font.render('4', True, BLACK)
+    label5 = label_font.render('5', True, BLACK)
+    label6 = label_font.render('6', True, BLACK)
+    label7 = label_font.render('7', True, BLACK)
+    label8 = label_font.render('8', True, BLACK)
+    label9 = label_font.render('9', True, BLACK)
+    label10 = label_font.render('10', True, BLACK)
+    screen.blit(label1, (20, 75))
+    screen.blit(label2, (20, 140))
+    screen.blit(label3, (20, 200))
+    screen.blit(label4, (20, 260))
+    screen.blit(label5, (20, 320))
+    screen.blit(label6, (20, 380))
+    screen.blit(label7, (20, 440))
+    screen.blit(label8, (20, 500))
+    screen.blit(label9, (20, 560))
+    screen.blit(label10, (15, 620))
+    # Horizontal labels (Cols A-J)
+    labelA = label_font.render('A', True, BLACK)
+    labelB = label_font.render('B', True, BLACK)
+    labelC = label_font.render('C', True, BLACK)
+    labelD = label_font.render('D', True, BLACK)
+    labelE = label_font.render('E', True, BLACK)
+    labelF = label_font.render('F', True, BLACK)
+    labelG = label_font.render('G', True, BLACK)
+    labelH = label_font.render('H', True, BLACK)
+    labelI = label_font.render('I', True, BLACK)
+    labelJ = label_font.render('J', True, BLACK)
+    screen.blit(labelA, (80, 20))
+    screen.blit(labelB, (140, 20))
+    screen.blit(labelC, (200, 20))
+    screen.blit(labelD, (260, 20))
+    screen.blit(labelE, (320, 20))
+    screen.blit(labelF, (380, 20))
+    screen.blit(labelG, (440, 20))
+    screen.blit(labelH, (500, 20))
+    screen.blit(labelI, (560, 20))
+    screen.blit(labelJ, (620, 20))
+
+# Update the grid display for when it's the player's turn
+def update_player_grid(board_array):
+    row = 1
+    col = 1
+    for row in range(1, 11):
+        for col in range(1, 11):
+            grid_cell = convert_grid_coordinates(row, col)
+
+            if board_array[row][col] == Cell.EMPTY or board_array[row][col] == Cell.HIDDEN:
+                pygame.draw.rect(screen, BLUE, grid_cell)
+            elif board_array[row][col] == Cell.MISS:
+                pygame.draw.rect(screen, GREEN, grid_cell)
+            elif board_array[row][col] == Cell.HIT:
+                pygame.draw.rect(screen, DARK_RED, grid_cell)
+            col += 1
+        row += 1
+    draw_grid_labels()
+
+
+# Update the grid display for when it's the AI's turn:
+def update_AI_grid(board_array):
+    row = 1
+    col = 1
+    for row in range(1, 11):
+        for col in range(1, 11):
+            grid_cell = convert_grid_coordinates(row, col)
+
+            if board_array[row][col] == Cell.EMPTY:
+                pygame.draw.rect(screen, BLUE, grid_cell)
+            elif board_array[row][col] == Cell.HIDDEN:  # When it's the AI's turn, the player sees their hidden ships
+                pygame.draw.rect(screen, YELLOW, grid_cell)
+            elif board_array[row][col] == Cell.MISS:
+                pygame.draw.rect(screen, GREEN, grid_cell)
+            elif board_array[row][col] == Cell.HIT:
+                pygame.draw.rect(screen, DARK_RED, grid_cell)
+            col += 1
+        row += 1
+    draw_grid_labels()
+
+
+# Pauses the screen time for wait_time milliseconds
+def wait_for(wait_time):
+    screen_copy = screen.copy()
+    count = 0
+    while count < wait_time:
+        dt = clock.tick(60)
+        count += dt
+        pygame.event.pump()
+        screen.blit(screen_copy, (0, 0))
         pygame.display.flip()
 
 
@@ -174,8 +277,6 @@ last_click = pygame.time.get_ticks()
 
 # Global variables:
 player = Player()
-player_board = Board()
-AI_board = Board()
 AI = AI()
 
 # -------- Main Program Loop -----------
@@ -202,9 +303,10 @@ while carryOn:
                         # Return all the coordinates of the user's ships - save to object
                         for ship in ships:
                             ship_coordinates = get_ship_coordinates(ship)
-                            player_board.add_ship(ship_coordinates)
+                            player.add_ship(ship_coordinates)
                         # Place the AI's ships:
                         AI.random_placement()
+                        print(player.print_all_ship_coordinates())
 
                 # SINGLE CLICK
                 now = pygame.time.get_ticks()
@@ -250,24 +352,12 @@ while carryOn:
                 if event.button == 1:
                     coordinates = convert_pixel_coordinates(event.pos[0], event.pos[1])
                     # Take a shot
-                    AI_board.shoot(coordinates[0], coordinates[1])
-                    # update display
-                    board_array = AI_board.get_board()
-                    row = 1
-                    col = 1
+                    AI.suffer_attack(coordinates)
+                    # Update display
+                    board_array = AI.get_board()
+                    update_player_grid(board_array)
 
-                    for row in range(11):
-                        for col in range(11):
-                            grid_cell = convert_grid_coordinates(row, col)
-
-                            if board_array[row][col] == Cell.EMPTY:
-                                pygame.draw.rect(screen, BLUE, grid_cell)
-                            elif board_array[row][col] == Cell.MISS:
-                                pygame.draw.rect(screen, GREEN, grid_cell)
-                            elif board_array[row][col] == Cell.HIT:
-                                pygame.draw.rect(screen, DARK_RED, grid_cell)
-                            col += 1
-                        row += 1
+                    wait_for(1000)
 
                     #Update turn:
                     player_turn = False
@@ -277,61 +367,25 @@ while carryOn:
     # If user presses start - make sure that all the board pieces are in the correct place, then start game
     if not setup:
         if AI_turn:
-            # Update the display:
-            board_array = player_board.get_board()
-            row = 1
-            col = 1
-            for row in range(11):
-                for col in range(11):
-                    grid_cell = convert_grid_coordinates(row, col)
-
-                    if board_array[row][col] == Cell.EMPTY:
-                        pygame.draw.rect(screen, BLUE, grid_cell)
-                    elif board_array[row][col] == Cell.MISS:
-                        pygame.draw.rect(screen, GREEN, grid_cell)
-                    elif board_array[row][col] == Cell.HIT:
-                        pygame.draw.rect(screen, DARK_RED, grid_cell)
-                    col += 1
-                row += 1
-
-            waitFor(300)
-
+            board_array = player.get_board()
+            update_AI_grid(board_array)
             # Shoot:
-            row, col, new_state = AI.random_attack(player_board)
-            grid_cell = convert_grid_coordinates(row, col)
-
-            if board_array[row][col] == Cell.EMPTY:
-                pygame.draw.rect(screen, BLUE, grid_cell)
-            elif board_array[row][col] == Cell.MISS:
-                pygame.draw.rect(screen, GREEN, grid_cell)
-            elif board_array[row][col] == Cell.HIT:
-                pygame.draw.rect(screen, DARK_RED, grid_cell)
-
+            row, col = AI.random_attack()
+            player.suffer_attack(row, col)
+            # Update display:
+            board_array = player.get_board()
+            update_AI_grid(board_array)
             # Update turn:
             player_turn = True
             AI_turn = False
 
+            wait_for(1000)
         else:
-            # update display
-            board_array = AI_board.get_board()
-            row = 1
-            col = 1
+            board_array = AI.get_board()
+            update_player_grid(board_array)
 
-            for row in range(11):
-                for col in range(11):
-                    grid_cell = convert_grid_coordinates(row, col)
-
-                    if board_array[row][col] == Cell.EMPTY:
-                        pygame.draw.rect(screen, BLUE, grid_cell)
-                    elif board_array[row][col] == Cell.MISS:
-                        pygame.draw.rect(screen, GREEN, grid_cell)
-                    elif board_array[row][col] == Cell.HIT:
-                        pygame.draw.rect(screen, DARK_RED, grid_cell)
-                    col += 1
-                row += 1
 
     # Draws (without updates)
-
     grid_space = pygame.Rect(60, 60, 660, 660)
     if setup:
         pygame.draw.rect(screen, BLUE, grid_space)
@@ -383,58 +437,7 @@ while carryOn:
     pygame.draw.line(screen, BLACK, [940, 200], [940, 640], 2)
     pygame.draw.line(screen, BLACK, [680, 640], [940, 640], 2)
 
-    # *** DRAW SHAPES, LINES, COLORS, ETC. HERE ***
-    # Draw vertical & horizontal lines: (Battleship rows
-    for x in range(11):
-        pos = (x+1)*60
-        pygame.draw.line(screen, WHITE, [pos, 0], [pos, board_length], 2)
-        pygame.draw.line(screen, WHITE, [0, pos], [board_width, pos], 2)
-
-    # Labels for x & y axis:
-    pygame.font.init()
-    label_font = pygame.font.Font('freesansbold.ttf', 30)
-    # Vertical labels (Rows 1-10):
-    label1 = label_font.render('1', True, BLACK)
-    label2 = label_font.render('2', True, BLACK)
-    label3 = label_font.render('3', True, BLACK)
-    label4 = label_font.render('4', True, BLACK)
-    label5 = label_font.render('5', True, BLACK)
-    label6 = label_font.render('6', True, BLACK)
-    label7 = label_font.render('7', True, BLACK)
-    label8 = label_font.render('8', True, BLACK)
-    label9 = label_font.render('9', True, BLACK)
-    label10 = label_font.render('10', True, BLACK)
-    screen.blit(label1, (20, 75))
-    screen.blit(label2, (20, 140))
-    screen.blit(label3, (20, 200))
-    screen.blit(label4, (20, 260))
-    screen.blit(label5, (20, 320))
-    screen.blit(label6, (20, 380))
-    screen.blit(label7, (20, 440))
-    screen.blit(label8, (20, 500))
-    screen.blit(label9, (20, 560))
-    screen.blit(label10, (15, 620))
-    # Horizontal labels (Cols A-J)
-    labelA = label_font.render('A', True, BLACK)
-    labelB = label_font.render('B', True, BLACK)
-    labelC = label_font.render('C', True, BLACK)
-    labelD = label_font.render('D', True, BLACK)
-    labelE = label_font.render('E', True, BLACK)
-    labelF = label_font.render('F', True, BLACK)
-    labelG = label_font.render('G', True, BLACK)
-    labelH = label_font.render('H', True, BLACK)
-    labelI = label_font.render('I', True, BLACK)
-    labelJ = label_font.render('J', True, BLACK)
-    screen.blit(labelA, (80, 20))
-    screen.blit(labelB, (140, 20))
-    screen.blit(labelC, (200, 20))
-    screen.blit(labelD, (260, 20))
-    screen.blit(labelE, (320, 20))
-    screen.blit(labelF, (380, 20))
-    screen.blit(labelG, (440, 20))
-    screen.blit(labelH, (500, 20))
-    screen.blit(labelI, (560, 20))
-    screen.blit(labelJ, (620, 20))
+    draw_grid_labels()
 
     if setup or AI_turn:
         pygame.draw.rect(screen, YELLOW, carrier)

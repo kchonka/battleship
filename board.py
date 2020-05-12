@@ -64,6 +64,7 @@ class Board:
 
         return self.board[row][col]             # Return the updated board state
 
+    '''
     # Outputs a board representation to the stdout console
     def print_board(self):
         for x in range(WIDTH):
@@ -76,5 +77,5 @@ class Board:
                     print("X")  # Miss
                 elif self.board[x][y] == 3:
                     print("S")  # Hit
-
+    '''
 
