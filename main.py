@@ -411,21 +411,22 @@ while carryOn:
             message_font = pygame.font.Font('freesansbold.ttf', 20)
             message = "AI's turn"
             message_text = message_font.render(message, True, BLACK)
-            message_rect = message_text.get_rect(center=(message_box.center))
+            message_rect = message_text.get_rect(center=message_box.center)
             screen.blit(message_text, message_rect)
 
             board_array = player.get_board()
             update_AI_grid(board_array)
             # Shoot:
             row, col = AI.random_attack(last_AI_attack)
-            last_AI_attack = player.suffer_attack(row, col)
+            player.suffer_attack(row, col)
             # Check for sunken ships:
             player.check_sunken_ships()
+            last_AI_attack = player.get_state(row, col)
             # Update display:
             board_array = player.get_board()
             update_AI_grid(board_array)
             # Update turn: If last turn was a hit or sink, go again
-            if last_AI_attack == Cell.HIT or last_player_attack == Cell.SUNK:
+            if last_AI_attack == Cell.HIT or last_AI_attack == Cell.SUNK:
                 AI_turn = True
                 player_turn = False
             else:
@@ -440,7 +441,7 @@ while carryOn:
             message_font = pygame.font.Font('freesansbold.ttf', 20)
             message = "Your turn"
             message_text = message_font.render(message, True, BLACK)
-            message_rect = message_text.get_rect(center=(message_box.center))
+            message_rect = message_text.get_rect(center=message_box.center)
             screen.blit(message_text, message_rect)
 
             board_array = AI.get_board()

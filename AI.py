@@ -1,17 +1,24 @@
 # Class representing an AI object
 
+from ship import Ship, Direction
 from board import Board, Cell
 from random import seed, randint
 import time
 
+
 class AI:
     def __init__(self):
-        self.board = Board()
-        self.moves = []
+        self.board = Board()                        # AI's board
+        self.moves = []                             # List of all previous moves the AI has made (coordinates)
+        self.ship = Ship()                          # Small memory object to store hit info
 
     # Returns the board array list (not a Board object) --> calls Board's get_board
     def get_board(self):
         return self.board.get_board()
+
+    # Returns the state of the board (Empty, hidden, missed, hit, sunk)
+    def get_state(self, row, col):
+        return self.board.get_state(row, col)
 
     # Checks for sunken ships and updates the board
     def check_sunken_ships(self):
@@ -43,67 +50,91 @@ class AI:
         col = coordinates[1]
         return self.board.shoot(row, col)
 
+    # Helper method for random_attack
+    # Selects a random cell for attack
+    def random_shot(self):
+        coordinates = self.moves[-1]
+        while coordinates in self.moves:
+            seed(time.time())
+            row = randint(1, 10)
+            col = randint(1, 10)
+
+            coordinates = [row, col]
+
+            if coordinates not in self.moves:
+                self.moves.append(coordinates)
+                return coordinates[0], coordinates[1]
+
+    # Helper method for random_attack
+    # Takes in a pair of coordinates and a direction
+    # # Returns a new move following UDLR (Up, Down, Left, Right) order
+    def attackUDLR(self, coordinates, direction):
+        last_row = coordinates[0]
+        last_col = coordinates[1]
+
+        if direction == Direction.UP:
+            new_coordinates = [last_row, last_col - 1]
+            print("UP" + str(new_coordinates))
+            if new_coordinates not in self.moves:
+                self.moves.append(new_coordinates)
+                return new_coordinates[0], new_coordinates[1]
+
+        elif direction == Direction.DOWN:
+            new_coordinates = [last_row, last_col + 1]
+            print("DOWN" + str(new_coordinates))
+            if new_coordinates not in self.moves:
+                self.moves.append(new_coordinates)
+                return new_coordinates[0], new_coordinates[1]
+
+        elif direction == Direction.LEFT:
+            new_coordinates = [last_row - 1, last_col]
+            print("LEFT" + str(new_coordinates))
+            if new_coordinates not in self.moves:
+                self.moves.append(new_coordinates)
+                return new_coordinates[0], new_coordinates[1]
+
+        elif direction == Direction.RIGHT:
+            new_coordinates = [last_row + 1, last_col]
+            print("RIGHT" + str(new_coordinates))
+            if new_coordinates not in self.moves:
+                self.moves.append(new_coordinates)
+                return new_coordinates[0], new_coordinates[1]
+
     # Takes in one argument: The state of the last attack
     def random_attack(self, last_move_state):
 
         # If this is the first move:
         if not self.moves:
+            # Make random selection
             seed(time.time())
             row = randint(1, 10)
             col = randint(1, 10)
 
             coordinates = [row, col]
             self.moves.append(coordinates)
-
             return row, col
-        # Else:
-        else:
-            coordinates = self.moves[-1]
+        else:   # Else if not first move:
 
             if last_move_state == Cell.HIT:
-                # If there was a hit: attack up, down, left, right
-                last_row = coordinates[0]
-                last_col = coordinates[1]
+                self.ship.add_coordinates(self.moves[-1])
+                direction = self.ship.get_direction()
+                coordinates = self.moves[-1]
+                return self.attackUDLR(coordinates, direction)
 
-                print("last coordinates: " + str(coordinates))
+            elif last_move_state == Cell.SUNK:
+                # Last move sunk the ship, so on this turn make a random shot
+                self.ship.clear()
+                return self.random_shot()
 
-                # UP:
-                new_coordinates = [last_row, last_col - 1]
-                print("UP" + str(new_coordinates))
-                if new_coordinates not in self.moves:
-                    self.moves.append(coordinates)
-                    return new_coordinates[0], new_coordinates[1]
+            else:   # last_move_state was a MISS
+                if self.ship.is_empty() is False:   # Ship in progress, work from there
+                    self.ship.increment_direction()
+                    direction = self.ship.get_direction()
+                    origin = self.ship.get_origin()
 
-                # DOWN:
-                new_coordinates = [last_row, last_col + 1]
-                print("DOWN" + str(new_coordinates))
-                if new_coordinates not in self.moves:
-                    self.moves.append(coordinates)
-                    return new_coordinates[0], new_coordinates[1]
+                    return self.attackUDLR(origin, direction)
 
-                # LEFT:
-                new_coordinates = [last_row - 1, last_col]
-                print("LEFT" + str(new_coordinates))
-                if new_coordinates not in self.moves:
-                    self.moves.append(coordinates)
-                    return new_coordinates[0], new_coordinates[1]
+                else:     # Random shot
+                    return self.random_shot()
 
-                # RIGHT:
-                new_coordinates = [last_row + 1, last_col]
-                print("RIGHT" + str(new_coordinates))
-                if new_coordinates not in self.moves:
-                    self.moves.append(coordinates)
-                    return new_coordinates[0], new_coordinates[1]
-
-            else:
-                while coordinates in self.moves:
-                    seed(time.time())
-                    row = randint(1, 10)
-                    col = randint(1, 10)
-
-                    coordinates = [row, col]
-
-                    if coordinates not in self.moves:
-                        self.moves.append(coordinates)
-                        return coordinates[0], coordinates[1]
 

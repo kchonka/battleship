@@ -12,6 +12,10 @@ class Player:
     def get_board(self):
         return self.board.get_board()
 
+    # Returns the state of the board (Empty, hidden, missed, hit, sunk)
+    def get_state(self, row, col):
+        return self.board.get_state(row, col)
+
     # Checks for sunken ships and updates the board
     def check_sunken_ships(self):
         self.board.check_sunken_ships()
