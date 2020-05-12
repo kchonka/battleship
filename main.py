@@ -387,13 +387,13 @@ while carryOn:
                 if event.button == 1:
                     coordinates = convert_pixel_coordinates(event.pos[0], event.pos[1])
                     # Take a shot
-                    AI.suffer_attack(coordinates)
+                    last_player_attack = AI.suffer_attack(coordinates)
                     # Check for sunken ships:
                     AI.check_sunken_ships()
                     # Update display
                     board_array = AI.get_board()
                     update_player_grid(board_array)
-                    wait_for(1000)
+                    wait_for(800)
                     # Update turn: If last turn was a hit or sink, go again
                     if last_player_attack == Cell.HIT or last_player_attack == Cell.SUNK:
                         player_turn = True
