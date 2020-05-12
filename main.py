@@ -222,6 +222,13 @@ def color_message_box():
     pygame.draw.line(screen, BLACK, [940, 125], [940, 185], 2)
 
 
+def update_message_box(message):
+    message_font = pygame.font.Font('freesansbold.ttf', 20)
+    message_text = message_font.render(message, True, BLACK)
+    message_rect = message_text.get_rect(center=message_box.center)
+    screen.blit(message_text, message_rect)
+
+
 # Colors the section below the message box that holds the ships at the start
 def color_action_box():
     screen.fill(LIGHT_BLUE, action_box)
@@ -394,6 +401,11 @@ while carryOn:
                     board_array = AI.get_board()
                     update_player_grid(board_array)
                     wait_for(800)
+
+                    # Check if player wins:
+                    if AI.check_win() is True:
+                        carryOn = False
+
                     # Update turn: If last turn was a hit or sink, go again
                     if last_player_attack == Cell.HIT or last_player_attack == Cell.SUNK:
                         player_turn = True
@@ -407,12 +419,9 @@ while carryOn:
     if not setup:
         if AI_turn:
             # Update message box:
-            color_message_box()
-            message_font = pygame.font.Font('freesansbold.ttf', 20)
             message = "AI's turn"
-            message_text = message_font.render(message, True, BLACK)
-            message_rect = message_text.get_rect(center=message_box.center)
-            screen.blit(message_text, message_rect)
+            color_message_box()
+            update_message_box(message)
 
             board_array = player.get_board()
             update_AI_grid(board_array)
@@ -425,6 +434,11 @@ while carryOn:
             # Update display:
             board_array = player.get_board()
             update_AI_grid(board_array)
+
+            # Check if AI wins:
+            if player.check_win() is True:
+                carryOn = False
+
             # Update turn: If last turn was a hit or sink, go again
             if last_AI_attack == Cell.HIT or last_AI_attack == Cell.SUNK:
                 AI_turn = True

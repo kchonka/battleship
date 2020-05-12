@@ -20,6 +20,10 @@ class Player:
     def check_sunken_ships(self):
         self.board.check_sunken_ships()
 
+    # Check if won:
+    def check_win(self):
+        return self.board.check_win()
+
     def add_ship(self, name, coordinates):
         self.board.add_ship(name, coordinates)
 

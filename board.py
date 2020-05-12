@@ -2,6 +2,7 @@
 # Both the player and AI classes will use this class as their board
 
 from enum import Enum
+
 HEIGHT = 11
 WIDTH = 11
 
@@ -20,6 +21,7 @@ class Board:
     def __init__(self):
         self.board = [[Cell.EMPTY for x in range(WIDTH)] for y in range(HEIGHT)]
         self.ships = {"battleship": None, "carrier": None, "cruiser": None, "submarine": None, "destroyer": None}
+        self.sunk = 0  # The number of sunken ships
 
     # Returns the array matrix with all the states:
     def get_board(self):
@@ -36,6 +38,13 @@ class Board:
 
         self.ships[name] = coordinates
 
+    # Check if won:
+    def check_win(self):
+        if self.sunk != 5:
+            return False
+        else:
+            return True
+
     # Given a ship's name, checks to see whether the ship was sunk entirely
     # If sunk, updates the hits on the board to sunk (HIT --> SUNK)
     # Returns 'True' if the ship was sunk, 'False' if not
@@ -50,11 +59,13 @@ class Board:
                     if self.board[row][col] != Cell.HIT:
                         sunk = False
                         break
-                if sunk:    # Update board if sunk
+                if sunk:
+                    # Update board if sunk
                     for pair in coordinates:
                         row = pair[0]
                         col = pair[1]
                         self.board[row][col] = Cell.SUNK
+                    sunk += 1
 
     # Returns the state of the board (Empty, hidden, missed, hit, sunk)
     def get_state(self, row, col):
@@ -72,19 +83,3 @@ class Board:
             self.board[row][col] = Cell.HIT     # If current state is HIDDEN SHIP --> update to a HIT
 
         return self.board[row][col]             # Return the updated board state
-
-    '''
-    # Outputs a board representation to the stdout console
-    def print_board(self):
-        for x in range(WIDTH):
-            for y in range(HEIGHT):
-                if self.board[x][y] == 0:
-                    print("_")  # Empty cell
-                elif self.board[x][y] == 1:
-                    print("#")  # Cell with a ship piece
-                elif self.board[x][y] == 2:
-                    print("X")  # Miss
-                elif self.board[x][y] == 3:
-                    print("S")  # Hit
-    '''
-

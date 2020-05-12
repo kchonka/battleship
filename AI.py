@@ -24,8 +24,13 @@ class AI:
     def check_sunken_ships(self):
         self.board.check_sunken_ships()
 
+    # Check if won:
+    def check_win(self):
+        return self.board.check_win()
+
     def random_placement(self):
-        # ** must implement random placement on any given turn**
+        # ** NEEDS TO BE IMPLEMENTED: this is just a sample arrangement i used for testing***
+        # This code puts the ships in the same spot every time
         # Sample example:
         carrier = [[10, 4], [10, 5], [10, 6], [10, 7], [10, 8]]
         battleship = [[2, 2], [2, 3], [2, 4], [2, 5]]
@@ -73,27 +78,41 @@ class AI:
         last_col = coordinates[1]
 
         if direction == Direction.UP:
-            new_coordinates = [last_row, last_col - 1]
-            print("UP" + str(new_coordinates))
-            if new_coordinates not in self.moves:
-                self.moves.append(new_coordinates)
-                return new_coordinates[0], new_coordinates[1]
+            # Check if moving up is possible:
+            if last_col - 1 > 0:
+                new_coordinates = [last_row, last_col - 1]
+                if new_coordinates not in self.moves:
+                    self.moves.append(new_coordinates)
+                    return new_coordinates[0], new_coordinates[1]
+            else:   # moving up not possible, increment direction
+                self.ship.increment_direction()
+                direction = self.ship.get_direction()
 
-        elif direction == Direction.DOWN:
-            new_coordinates = [last_row, last_col + 1]
-            print("DOWN" + str(new_coordinates))
-            if new_coordinates not in self.moves:
-                self.moves.append(new_coordinates)
-                return new_coordinates[0], new_coordinates[1]
+        if direction == Direction.DOWN:
+            # Check if moving down is possible:
+            if last_col + 1 < 11:
+                new_coordinates = [last_row, last_col + 1]
+                print("DOWN" + str(new_coordinates))
+                if new_coordinates not in self.moves:
+                    self.moves.append(new_coordinates)
+                    return new_coordinates[0], new_coordinates[1]
+            else:
+                self.ship.increment_direction()
+                direction = self.ship.get_direction()
 
-        elif direction == Direction.LEFT:
-            new_coordinates = [last_row - 1, last_col]
-            print("LEFT" + str(new_coordinates))
-            if new_coordinates not in self.moves:
-                self.moves.append(new_coordinates)
-                return new_coordinates[0], new_coordinates[1]
+        if direction == Direction.LEFT:
+            # Check if moving left is possible:
+            if last_row - 1 > 0:
+                new_coordinates = [last_row - 1, last_col]
+                print("LEFT" + str(new_coordinates))
+                if new_coordinates not in self.moves:
+                    self.moves.append(new_coordinates)
+                    return new_coordinates[0], new_coordinates[1]
+            else:
+                self.ship.increment_direction()
+                direction = self.ship.get_direction()
 
-        elif direction == Direction.RIGHT:
+        if direction == Direction.RIGHT:
             new_coordinates = [last_row + 1, last_col]
             print("RIGHT" + str(new_coordinates))
             if new_coordinates not in self.moves:
