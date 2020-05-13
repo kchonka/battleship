@@ -427,6 +427,7 @@ while carryOn:
             update_AI_grid(board_array)
             # Shoot:
             row, col = AI.random_attack(last_AI_attack)
+            print("[" + str(row) + ", " + str(col) + "]")
             player.suffer_attack(row, col)
             # Check for sunken ships:
             player.check_sunken_ships()
