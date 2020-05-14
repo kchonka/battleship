@@ -20,9 +20,13 @@ class Player:
     def check_sunken_ships(self):
         self.board.check_sunken_ships()
 
-    # Check if won:
-    def check_win(self):
-        return self.board.check_win()
+    # Check if lost: (the player is still in the game if all five of its ships are NOT sunk)
+    def check_loss(self):
+        sunken_ships = self.board.get_sunken_ships()
+        if sunken_ships < 5:
+            return False
+        else:
+            return True
 
     def add_ship(self, name, coordinates):
         self.board.add_ship(name, coordinates)

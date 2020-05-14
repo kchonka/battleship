@@ -24,9 +24,13 @@ class AI:
     def check_sunken_ships(self):
         self.board.check_sunken_ships()
 
-    # Check if won:
-    def check_win(self):
-        return self.board.check_win()
+    # Check if loss: (the AI is still in the game if all five of its ships are NOT sunk)
+    def check_loss(self):
+        sunken_ships = self.board.get_sunken_ships()
+        if sunken_ships < 5:
+            return False
+        else:
+            return True
 
     def random_placement(self):
         # ** NEEDS TO BE IMPLEMENTED: this is just a sample arrangement i used for testing***
@@ -96,7 +100,6 @@ class AI:
             # Check if moving down is possible:
             if y + 1 < 11:
                 new_coordinates = [x, y + 1]
-                print("DOWN" + str(new_coordinates))
                 if new_coordinates not in self.moves:
                     self.moves.append(new_coordinates)
                     return new_coordinates[0], new_coordinates[1]
@@ -111,7 +114,6 @@ class AI:
             # Check if moving left is possible:
             if x - 1 > 0:
                 new_coordinates = [x - 1, y]
-                print("LEFT" + str(new_coordinates))
                 if new_coordinates not in self.moves:
                     self.moves.append(new_coordinates)
                     return new_coordinates[0], new_coordinates[1]
@@ -124,7 +126,6 @@ class AI:
 
         if direction == Direction.RIGHT:
             new_coordinates = [x + 1, y]
-            print("RIGHT" + str(new_coordinates))
             if new_coordinates not in self.moves:
                 self.moves.append(new_coordinates)
                 return new_coordinates[0], new_coordinates[1]

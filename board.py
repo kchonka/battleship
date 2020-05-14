@@ -16,6 +16,7 @@ class Cell(Enum):
     HIT = 3         # A HIT (CELL WITH A SHIP THAT WAS HIT / SUCCESSFULLY ATTACKED)
     SUNK = 4        # A SHIP THAT WAS FULLY HIT / SUNK
 
+
 class Board:
     def __init__(self):
         self.board = [[Cell.EMPTY for x in range(WIDTH)] for y in range(HEIGHT)]
@@ -38,12 +39,9 @@ class Board:
 
         self.ships[name] = coordinates
 
-    # Check if won:
-    def check_win(self):
-        if self.sunk != 5:
-            return False
-        else:
-            return True
+    # Returns the amount of sunken ships on the board
+    def get_sunken_ships(self):
+        return self.sunk
 
     # Given a ship's name, checks to see whether the ship was sunk entirely
     # If sunk, updates the hits on the board to sunk (HIT --> SUNK)
@@ -60,7 +58,7 @@ class Board:
                         sunk = False
                         break
                 if sunk:
-                    sunk += 1
+                    self.sunk += 1
                     # Update board if sunk
                     for pair in coordinates:
                         row = pair[0]

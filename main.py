@@ -50,6 +50,9 @@ action_box = pygame.Rect(680, 200, 260, 440)    # Section below the message box;
 last_AI_attack = None       # The result of the last AI attack (hit, miss, etc.)
 last_player_attack = None   # The result of the last player attack (hit, miss, etc.)
 
+player_moves = []           # List of all the moves the player has already taken
+
+
 # Realigns the ships to the boxes so they are aligned to the rows & cols
 # Takes in a ship (Rect) object
 def realign(ship):
@@ -309,6 +312,8 @@ last_click = pygame.time.get_ticks()
 # Global variables:
 player = Player()
 AI = AI()
+player_win = False
+AI_win = False
 
 # -------- Main Program Loop -----------
 while carryOn:
@@ -391,8 +396,7 @@ while carryOn:
 
             # If it's the player's turn and they press on a square that hasn't been pressed before: take a shot
             elif player_turn and event.type == pygame.MOUSEBUTTONDOWN:
-                #if event.button == 1:
-                if event.pos[0] < 660:
+                if event.button == 1 and event.pos[0] < 660:
                     coordinates = convert_pixel_coordinates(event.pos[0], event.pos[1])
                     # Take a shot
                     last_player_attack = AI.suffer_attack(coordinates)
@@ -404,7 +408,8 @@ while carryOn:
                     wait_for(800)
 
                     # Check if player wins:
-                    if AI.check_win() is True:
+                    if AI.check_loss():
+                        player_win = True
                         carryOn = False
 
                     # Update turn: If last turn was a hit or sink, go again
@@ -438,7 +443,8 @@ while carryOn:
             update_AI_grid(board_array)
 
             # Check if AI wins:
-            if player.check_win() is True:
+            if player.check_loss():
+                AI_win = True
                 carryOn = False
 
             # Update turn: If last turn was a hit or sink, go again
@@ -522,13 +528,13 @@ while carryOn:
         message_font = pygame.font.Font('freesansbold.ttf', 17)
         message = "Hide your ships & press start."
         message_text = message_font.render(message, True, BLACK)
-        message_rect = message_text.get_rect(center=(message_box.center))
+        message_rect = message_text.get_rect(center=message_box.center)
         screen.blit(message_text, message_rect)
     elif player_turn:
         message_font = pygame.font.Font('freesansbold.ttf', 20)
         message = "Your turn"
         message_text = message_font.render(message, True, BLACK)
-        message_rect = message_text.get_rect(center=(message_box.center))
+        message_rect = message_text.get_rect(center=message_box.center)
         screen.blit(message_text, message_rect)
 
     # --- Go ahead and update the screen with what we've drawn.
@@ -536,6 +542,23 @@ while carryOn:
 
     # --- Limit to 60 frames per second
     clock.tick(60)
+
+# Display winner:
+screen.fill(BLUE)
+winner_font = pygame.font.Font('freesansbold.ttf', 40)
+winner_box = pygame.rect.Rect(0, 0, total_width, total_length)
+if player_win:
+    winner_message = "You win!"
+    winner_text = winner_font.render(winner_message, True, BLACK)
+    winner_rect = winner_text.get_rect(center=winner_box.center)
+    screen.blit(winner_text, winner_rect)
+else:
+    winner_message = "AI wins!"
+    winner_text = winner_font.render(winner_message, True, BLACK)
+    winner_rect = winner_text.get_rect(center=winner_box.center)
+    screen.blit(winner_text, winner_rect)
+
+wait_for(8000)
 
 # End the game
 pygame.quit()
