@@ -10,7 +10,7 @@ class AI:
     def __init__(self):
         self.board = Board()                        # AI's board
         self.moves = []                             # List of all previous moves the AI has made (coordinates)
-        self.ship = Ship()                          # Small memory object to store hit info
+        self.ship = Ship()                          # Memory object
 
     # Returns the board array list (not a Board object) --> calls Board's get_board
     def get_board(self):
@@ -74,63 +74,65 @@ class AI:
     # Takes in a pair of coordinates and a direction
     # # Returns a new move following UDLR (Up, Down, Left, Right) order
     def attackUDLR(self, coordinates, direction):
-        last_row = coordinates[0]
-        last_col = coordinates[1]
+        x = coordinates[0]
+        y = coordinates[1]
 
         if direction == Direction.UP:
             # Check if moving up is possible:
-            if last_col - 1 > 0:
-                new_coordinates = [last_row, last_col - 1]
+            if y - 1 > 0:
+                new_coordinates = [x, y - 1]
                 if new_coordinates not in self.moves:
                     self.moves.append(new_coordinates)
                     return new_coordinates[0], new_coordinates[1]
                 else:
-                    self.attackUDLR(new_coordinates, direction)
+                    return self.attackUDLR(new_coordinates, direction)
 
-            else:   # moving up not possible, increment direction
+            else:  # moving up not possible, increment direction
                 self.ship.increment_direction()
                 direction = self.ship.get_direction()
+                return self.attackUDLR(coordinates, direction)
 
         if direction == Direction.DOWN:
             # Check if moving down is possible:
-            if last_col + 1 < 11:
-                new_coordinates = [last_row, last_col + 1]
+            if y + 1 < 11:
+                new_coordinates = [x, y + 1]
                 print("DOWN" + str(new_coordinates))
                 if new_coordinates not in self.moves:
                     self.moves.append(new_coordinates)
                     return new_coordinates[0], new_coordinates[1]
                 else:
-                    self.attackUDLR(new_coordinates, direction)
+                    return self.attackUDLR(new_coordinates, direction)
             else:
                 self.ship.increment_direction()
                 direction = self.ship.get_direction()
+                return self.attackUDLR(coordinates, direction)
 
         if direction == Direction.LEFT:
             # Check if moving left is possible:
-            if last_row - 1 > 0:
-                new_coordinates = [last_row - 1, last_col]
+            if x - 1 > 0:
+                new_coordinates = [x - 1, y]
                 print("LEFT" + str(new_coordinates))
                 if new_coordinates not in self.moves:
                     self.moves.append(new_coordinates)
                     return new_coordinates[0], new_coordinates[1]
                 else:
-                    self.attackUDLR(new_coordinates, direction)
+                    return self.attackUDLR(new_coordinates, direction)
             else:
                 self.ship.increment_direction()
                 direction = self.ship.get_direction()
+                return self.attackUDLR(coordinates, direction)
 
         if direction == Direction.RIGHT:
-            new_coordinates = [last_row + 1, last_col]
+            new_coordinates = [x + 1, y]
             print("RIGHT" + str(new_coordinates))
             if new_coordinates not in self.moves:
                 self.moves.append(new_coordinates)
                 return new_coordinates[0], new_coordinates[1]
             else:
-                self.attackUDLR(new_coordinates, direction)
+                return self.attackUDLR(new_coordinates, direction)
 
     # Takes in one argument: The state of the last attack
     def random_attack(self, last_move_state):
-
         # If this is the first move:
         if not self.moves:
             # Make random selection
@@ -141,7 +143,7 @@ class AI:
             coordinates = [row, col]
             self.moves.append(coordinates)
             return row, col
-        else:   # Else if not first move:
+        else:  # Else if not first move:
 
             if last_move_state == Cell.HIT:
                 self.ship.add_coordinates(self.moves[-1])
@@ -154,15 +156,17 @@ class AI:
                 self.ship.clear()
                 return self.random_shot()
 
-            else:   # last_move_state was a MISS
-                if self.ship.is_empty() is False:   # Ship in progress, work from there
+            else:  # last_move_state was a MISS
+                if self.ship.is_empty() is False:  # Ship in progress, work from there
                     self.ship.increment_direction()
                     direction = self.ship.get_direction()
                     origin = self.ship.get_origin()
 
                     return self.attackUDLR(origin, direction)
 
-                else:     # Random shot
+                else:  # Random shot
                     return self.random_shot()
+
+
 
 

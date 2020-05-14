@@ -391,7 +391,8 @@ while carryOn:
 
             # If it's the player's turn and they press on a square that hasn't been pressed before: take a shot
             elif player_turn and event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
+                #if event.button == 1:
+                if event.pos[0] < 660:
                     coordinates = convert_pixel_coordinates(event.pos[0], event.pos[1])
                     # Take a shot
                     last_player_attack = AI.suffer_attack(coordinates)
