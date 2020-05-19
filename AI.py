@@ -241,6 +241,7 @@ class AI:
         self.board.add_ship("submarine", submarine)
         self.board.add_ship("destroyer", destroyer)
 
+
     # Get attacked BY the player opponent
     # Returns the new state at board[row][col]
     # Coordinates is a list pair of Board coordinates that the player fired at
@@ -424,6 +425,9 @@ class AI:
             new_coordinates = [x+1, y]
             if new_coordinates not in self.moves:
                 possible_actions.append(Action.RIGHT1)
+
+        if not possible_actions:
+            possible_actions.append(Action.HUNT)
 
         return possible_actions
 
