@@ -11,7 +11,7 @@ class Action(Enum):
     DOWN = 1
     LEFT = 2
     RIGHT = 3
-    HUNT = 4      # take random shot elsewhere
+    HUNT = 4      # Take random shot elsewhere
 
 
 class Cell(Enum):
