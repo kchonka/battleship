@@ -33,20 +33,131 @@ class AI:
             return True
 
     def random_placement(self):
-        # ** NEEDS TO BE IMPLEMENTED: this is just a sample arrangement i used for testing***
-        # This code puts the ships in the same spot every time
-        # Sample example:
-        carrier = [[10, 4], [10, 5], [10, 6], [10, 7], [10, 8]]
-        battleship = [[2, 2], [2, 3], [2, 4], [2, 5]]
-        cruiser = [[7, 2], [8, 2], [9, 2]]
-        submarine = [[3, 9], [4, 9], [5, 9]]
-        destroyer = [[5, 5], [6, 5]]
+        # Randomly choose orientation
+        orientation = ['h', 'v'][randint(0, 1)]
+        '''
+        if is empty position
+            orientation of ship = h or v randomly
+            if vertical, all starting pos y <= 6 == (6,0)
+                place the carrier on the board
+                update carrier location to add coordinates
+            if horizontal, all starting  pos x<= 6 == (0,6)
+                place the carrier on the board
+                update carrier location to add coordinates
+        else if not empty
+            search for empty spot
+        '''
+        # Check if the spot on the grid is empty
+        if self.ship.is_empty():
+            if orientation == 'h':
+                x = randint(0, 6)
+                y = randint(0, 6)
+                carrier = self.ship.add_coordinates([y, x])
+                return self.board.add_ship("carrier", carrier)
+            elif orientation == 'v':
+                x = randint(0, 6)
+                y = randint(0, 6)
+                carrier = self.ship.add_coordinates([y, x])
+                return self.board.add_ship("carrier", carrier)
 
-        self.board.add_ship("carrier", carrier)
-        self.board.add_ship("battleship", battleship)
-        self.board.add_ship("cruiser", cruiser)
-        self.board.add_ship("submarine", submarine)
-        self.board.add_ship("destroyer", destroyer)
+        '''
+        if is empty position
+            orientation of ship = h or v randomly
+            if vertical, all starting pos y <= 7 == (7,0)
+                place the battleship on the board
+                update battleship location to add coordinates
+            if horizontal, all starting  pos x<= 7 == (0,7)
+                place the battleship on the board
+                update battleship location to add coordinates
+        else if not empty
+            search for empty spot
+        '''
+
+        # Check if the spot on the grid is empty
+        if self.ship.is_empty():
+            if orientation == 'h':
+                x = randint(0, 7)
+                y = randint(0, 7)
+                battleship = self.ship.add_coordinates([y, x])
+                return self.board.add_ship("battleship", battleship)
+            elif orientation == 'v':
+                x = randint(0, 6)
+                y = randint(0, 6)
+                battleship = self.ship.add_coordinates([y, x])
+                return self.board.add_ship("battleship", battleship)
+
+        '''
+        if is empty position
+            orientation of ship = h or v randomly
+            if vertical, all starting pos y <= 8 == (8,0)
+                place the cruiser on the board
+                update cruiser location to add coordinates
+            if horizontal, all starting  pos x<= 8 == (0,8)
+                place the cruiser on the board
+                update cruiser location to add coordinates
+        else if not empty
+            search for empty spot
+        '''
+        # Check if the spot on the grid is empty
+        if self.ship.is_empty():
+            if orientation == 'h':
+                x = randint(0, 7)
+                y = randint(0, 7)
+                cruiser = self.ship.add_coordinates([y, x])
+                return self.board.add_ship("cruiser", cruiser)
+            elif orientation == 'v':
+                x = randint(0, 6)
+                y = randint(0, 6)
+                cruiser = self.ship.add_coordinates([y, x])
+                return self.board.add_ship("cruiser", cruiser)
+        '''
+        if is empty position
+            orientation of ship = h or v randomly
+            if vertical, all starting pos y <= 8 == (8,0)
+                place the submarine on the board
+                update ship location to add coordinates
+            if horizontal, all starting  pos x<= 8 == (0,8)
+                place the submarine on the board
+                update submarine location to add coordinates
+        else if not empty
+            search for empty spot
+        '''
+        # Check if the spot on the grid is empty
+        if self.ship.is_empty():
+            if orientation == 'h':
+                x = randint(0, 7)
+                y = randint(0, 7)
+                submarine = self.ship.add_coordinates([y, x])
+                return self.board.add_ship("submarine", submarine)
+            elif orientation == 'v':
+                x = randint(0, 6)
+                y = randint(0, 6)
+                submarine = self.ship.add_coordinates([y, x])
+                return self.board.add_ship("submarine", submarine)
+        '''
+        if is empty position
+            orientation of ship = h or v randomly
+            if vertical, all starting pos y <= 9 == (9,0)
+                place the destroyer on the board
+                update destroyer location to add coordinates
+            if horizontal, all starting  pos x<= 9 == (0,9)
+                place the destroyer on the board
+                update destroyer location to add coordinates
+        else if not empty
+            search for empty spot
+        '''
+        # Check if the spot on the grid is empty
+        if self.ship.is_empty():
+            if orientation == 'h':
+                x = randint(0, 7)
+                y = randint(0, 7)
+                destroyer = self.ship.add_coordinates([y, x])
+                return self.board.add_ship("destroyer", destroyer)
+            elif orientation == 'v':
+                x = randint(0, 6)
+                y = randint(0, 6)
+                destroyer = self.ship.add_coordinates([y, x])
+                return self.board.add_ship("destroyer", destroyer)
 
     def monte_carlo_placement(self):
         pass
@@ -167,7 +278,3 @@ class AI:
 
                 else:  # Random shot
                     return self.random_shot()
-
-
-
-
