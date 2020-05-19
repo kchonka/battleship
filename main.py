@@ -424,6 +424,7 @@ while carryOn:
     # If user presses start - make sure that all the board pieces are in the correct place, then start game
     if not setup:
         if AI_turn:
+            
             # Q LEARNING AI:
             # Update message box:
             message = "AI's turn"
@@ -431,7 +432,6 @@ while carryOn:
             update_message_box(message)
             sunken_ships = player.get_sunken_ships()
             row, col = AI.Q_Learning_AI(last_AI_attack, sunken_ships)
-            print(str(row) + ", " + str(col))
             player.suffer_attack(row, col)
             # Check for sunken ships:
             player.check_sunken_ships()
@@ -461,12 +461,12 @@ while carryOn:
             message = "AI's turn"
             color_message_box()
             update_message_box(message)
+            sunken_ships = player.get_sunken_ships()
 
             board_array = player.get_board()
             update_AI_grid(board_array)
             # Shoot:
-            row, col = AI.random_attack(last_AI_attack)
-            print("[" + str(row) + ", " + str(col) + "]")
+            row, col = AI.random_attack(last_AI_attack, sunken_ships)
             player.suffer_attack(row, col)
             # Check for sunken ships:
             player.check_sunken_ships()
@@ -474,7 +474,7 @@ while carryOn:
             # Update display:
             board_array = player.get_board()
             update_AI_grid(board_array)
-
+            '''
             # Check if AI wins:
             if player.check_loss():
                 AI_win = True
@@ -489,7 +489,7 @@ while carryOn:
                 AI_turn = False
 
             wait_for(1500)
-            '''
+
         else:
             # Update message box:
             color_message_box()

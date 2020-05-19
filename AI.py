@@ -324,7 +324,7 @@ class AI:
                 return self.attackUDLR(new_coordinates, direction)
 
     # Takes in one argument: The state of the last attack
-    def random_attack(self, last_move_state):
+    def random_attack(self, last_move_state, sunken_ships):
         # If this is the first move:
         if not self.moves:
             # Make random selection
@@ -342,7 +342,6 @@ class AI:
                 direction = self.ship.get_direction()
                 coordinates = self.moves[-1]
                 return self.attackUDLR(coordinates, direction)
-
             elif last_move_state == Cell.SUNK:
                 # Last move sunk the ship, so on this turn make a random shot
                 self.ship.clear()
@@ -353,11 +352,68 @@ class AI:
                     self.ship.increment_direction()
                     direction = self.ship.get_direction()
                     origin = self.ship.get_origin()
-
                     return self.attackUDLR(origin, direction)
 
                 else:  # Random shot
                     return self.random_shot()
+
+            '''
+            last_pos = self.moves[-1]
+
+            if last_move_state == Cell.HIT:
+                # Add last_pos to active hits:
+                self.active_hits.append(last_pos)
+                # Get all possible actions after a hit
+                possible_actions = self.get_hit_actions(last_pos)
+                # Just choose the first action in the list:
+                action = possible_actions[0]
+                # Get the next position as a result of the above action
+                next_pos = self.board.get_next_position(last_pos, action)
+                # Append next_pos
+                self.moves.append(next_pos)
+                # Return this position
+                return next_pos[0], next_pos[1]
+
+            # Last move resulted in a miss but there are still active hits
+            elif last_move_state == Cell.MISS and self.active_hits:
+                pos = self.active_hits[0]
+                # Get all possible actions after a hit
+                possible_actions = self.get_hit_actions(pos)
+                # Just choose the first action in the list:
+                action = possible_actions[0]
+                # Get the next position as a result of the above action
+                next_pos = self.board.get_next_position(pos, action)
+                # Append next_pos
+                self.moves.append(next_pos)
+                # Return this position
+                return next_pos[0], next_pos[1]
+
+            elif last_move_state == Cell.SUNK:
+                # Remove from active hits
+                for coordinates in sunken_ships:
+                    if coordinates in self.active_hits:
+                        self.active_hits.remove(coordinates)
+
+                # Check if active hits is still not empty:
+                if self.active_hits:
+                    last_pos = self.active_hits[0] # use the first active hit to work with
+                    possible_actions = self.get_hit_actions(last_pos)
+                    # Just choose the first action in the list:
+                    action = possible_actions[0]
+                    # Get the next position as a result of the above action
+                    next_pos = self.board.get_next_position(last_pos, action)
+                    # Append next_pos
+                    self.moves.append(next_pos)
+                    # Return this position
+                    return next_pos[0], next_pos[1]
+                else:   # random shot
+                    return self.random_shot()
+
+            else:
+                return self.random_shot()
+            '''
+
+
 
 
     # Returns a numerical position on the qtable grid corresponding to the row & col
