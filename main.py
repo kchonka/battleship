@@ -424,6 +424,39 @@ while carryOn:
     # If user presses start - make sure that all the board pieces are in the correct place, then start game
     if not setup:
         if AI_turn:
+            # Q LEARNING AI:
+            # Update message box:
+            message = "AI's turn"
+            color_message_box()
+            update_message_box(message)
+            sunken_ships = player.get_sunken_ships()
+            row, col = AI.Q_Learning_AI(last_AI_attack, sunken_ships)
+            print(str(row) + ", " + str(col))
+            player.suffer_attack(row, col)
+            # Check for sunken ships:
+            player.check_sunken_ships()
+            last_AI_attack = player.get_state(row, col)
+            # Update display:
+            board_array = player.get_board()
+            update_AI_grid(board_array)
+
+            # Check if AI wins:
+            if player.check_loss():
+                AI_win = True
+                carryOn = False
+
+            # Update turn: If last turn was a hit or sink, go again
+            if last_AI_attack == Cell.HIT or last_AI_attack == Cell.SUNK:
+                AI_turn = True
+                player_turn = False
+            else:
+                player_turn = True
+                AI_turn = False
+
+            wait_for(1500)
+
+            '''
+            # RANDOM AI:
             # Update message box:
             message = "AI's turn"
             color_message_box()
@@ -456,7 +489,7 @@ while carryOn:
                 AI_turn = False
 
             wait_for(1500)
-
+            '''
         else:
             # Update message box:
             color_message_box()
@@ -531,34 +564,35 @@ while carryOn:
         message_rect = message_text.get_rect(center=message_box.center)
         screen.blit(message_text, message_rect)
     elif player_turn:
-        message_font = pygame.font.Font('freesansbold.ttf', 20)
         message = "Your turn"
-        message_text = message_font.render(message, True, BLACK)
-        message_rect = message_text.get_rect(center=message_box.center)
-        screen.blit(message_text, message_rect)
+        color_message_box()
+        update_message_box(message)
 
-    # --- Go ahead and update the screen with what we've drawn.
+    # Update the screen with what we've drawn.
     pygame.display.flip()
 
     # --- Limit to 60 frames per second
     clock.tick(60)
 
 # Display winner:
-screen.fill(BLUE)
-winner_font = pygame.font.Font('freesansbold.ttf', 40)
-winner_box = pygame.rect.Rect(0, 0, total_width, total_length)
 if player_win:
+    screen.fill(BLUE)
+    winner_font = pygame.font.Font('freesansbold.ttf', 40)
+    winner_box = pygame.rect.Rect(0, 0, total_width, total_length)
     winner_message = "You win!"
     winner_text = winner_font.render(winner_message, True, BLACK)
     winner_rect = winner_text.get_rect(center=winner_box.center)
     screen.blit(winner_text, winner_rect)
-else:
+    wait_for(8000)
+elif AI_win:
+    screen.fill(BLUE)
+    winner_font = pygame.font.Font('freesansbold.ttf', 40)
+    winner_box = pygame.rect.Rect(0, 0, total_width, total_length)
     winner_message = "AI wins!"
     winner_text = winner_font.render(winner_message, True, BLACK)
     winner_rect = winner_text.get_rect(center=winner_box.center)
     screen.blit(winner_text, winner_rect)
-
-wait_for(8000)
+    wait_for(8000)
 
 # End the game
 pygame.quit()

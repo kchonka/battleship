@@ -12,6 +12,13 @@ class Player:
     def get_board(self):
         return self.board.get_board()
 
+    # Returns a copy of the player's board object:
+    def get_board_copy(self):
+        return self.board
+
+    def get_sunken_ships(self):
+        return self.board.get_sunken_ships()
+
     # Returns the state of the board (Empty, hidden, missed, hit, sunk)
     def get_state(self, row, col):
         return self.board.get_state(row, col)
@@ -22,7 +29,7 @@ class Player:
 
     # Check if lost: (the player is still in the game if all five of its ships are NOT sunk)
     def check_loss(self):
-        sunken_ships = self.board.get_sunken_ships()
+        sunken_ships = self.board.get_number_sunken_ships()
         if sunken_ships < 5:
             return False
         else:

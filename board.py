@@ -2,11 +2,20 @@
 # Both the player and AI classes will use this class as their board
 
 from enum import Enum
+from random import seed, randint
+import random
+import time
 
-HEIGHT = 11
-WIDTH = 11
-
-# 10 row x 10 cols for the game, but row 0 & col 0 are unused / off limits = 11 x 11
+class Action(Enum):
+    UP1 = 0
+    DOWN1 = 1
+    LEFT1 = 2
+    RIGHT1 = 3
+    UP2 = 4
+    DOWN2 = 5
+    LEFT2 = 6
+    RIGHT2 = 7
+    HUNT = 8       # take random shot elsewhere
 
 
 class Cell(Enum):
@@ -19,9 +28,16 @@ class Cell(Enum):
 
 class Board:
     def __init__(self):
-        self.board = [[Cell.EMPTY for x in range(WIDTH)] for y in range(HEIGHT)]
+        # 10 row x 10 cols for the game, but row 0 & col 0 are unused / off limits = 11 x 11
+        self.board = [[Cell.EMPTY for x in range(11)] for y in range(11)]
         self.ships = {"battleship": None, "carrier": None, "cruiser": None, "submarine": None, "destroyer": None}
+        self.ships_sunk = {"battleship": False, "carrier": False, "cruiser": False, "submarine": False, "destroyer": True}
         self.sunk = 0  # The number of sunken ships
+        self.moves = 0 # The number of cells explored / moves taken
+        self.sunken_ship_coordinates = [] # List of all the coordinates with "SUNK" status
+
+    def reset(self):
+        self.board = [[Cell.EMPTY for x in range(WIDTH)] for y in range(HEIGHT)]
 
     # Returns the array matrix with all the states:
     def get_board(self):
@@ -40,7 +56,7 @@ class Board:
         self.ships[name] = coordinates
 
     # Returns the amount of sunken ships on the board
-    def get_sunken_ships(self):
+    def get_number_sunken_ships(self):
         return self.sunk
 
     # Given a ship's name, checks to see whether the ship was sunk entirely
@@ -52,32 +68,73 @@ class Board:
             coordinates = self.ships[name]
             if coordinates is not None:
                 for pair in coordinates:
-                    row = pair[0]
-                    col = pair[1]
-                    if self.board[row][col] != Cell.HIT:
+                    x = pair[0]
+                    y = pair[1]
+                    if self.board[x][y] != Cell.HIT:
                         sunk = False
                         break
                 if sunk:
                     self.sunk += 1
                     # Update board if sunk
                     for pair in coordinates:
-                        row = pair[0]
-                        col = pair[1]
-                        self.board[row][col] = Cell.SUNK
-
+                        x = pair[0]
+                        y = pair[1]
+                        self.board[x][y] = Cell.SUNK
+                        self.sunken_ship_coordinates.append(pair)
+        return sunk
     # Returns the state of the board (Empty, hidden, missed, hit, sunk)
     def get_state(self, row, col):
         return self.board[row][col]
 
-    # Shoot at [row][col]
+    # Shoot at [x][y]
     # Checks the current state at those coordinates, updates, and returns the new state
-    def shoot(self, row, col):
-        state = self.board[row][col]
+    def shoot(self, x, y):
+        status = self.board[x][y]
 
         # Checks the current state of the block:
-        if state == Cell.EMPTY:
-            self.board[row][col] = Cell.MISS    # If current state is EMPTY --> update to a MISS
-        elif state == Cell.HIDDEN:
-            self.board[row][col] = Cell.HIT     # If current state is HIDDEN SHIP --> update to a HIT
+        if status == Cell.EMPTY:
+            self.board[x][y] = Cell.MISS    # If current state is EMPTY --> update to a MISS
+        elif status == Cell.HIDDEN:
+            self.board[x][y] = Cell.HIT     # If current state is HIDDEN SHIP --> update to a HIT
 
-        return self.board[row][col]             # Return the updated board state
+        return self.board[x][y]             # Return the updated board state
+
+
+    # Given a current pos (coordinates) and an action to move in,
+    # Returns the next position (new coordinates)
+    def get_next_position(self, cur_pos, action):
+        x = cur_pos[0]
+        y = cur_pos[1]
+
+        if action == Action.UP1:
+            return [x, y-1]
+        elif action == Action.UP2:
+            return [x, y-2]
+        elif action == Action.DOWN1:
+            return [x, y+1]
+        elif action == Action.DOWN2:
+            return [x, y+2]
+        elif action == Action.LEFT1:
+            return [x-1, y]
+        elif action == Action.LEFT2:
+            return [x-2, y]
+        elif action == Action.RIGHT1:
+            return [x+1, y]
+        elif action == Action.RIGHT2:
+            return [x+2, y]
+        elif action == Action.HUNT:
+            seed(time.time())
+            x = randint(1, 10)
+            y = randint(1, 10)
+
+            return [x, y]
+
+    def is_game_over(self):
+        if self.moves >= 100 or self.sunk == 5:
+            return True
+        else:
+            return False
+
+    # Returns the ships sunk and their coordinates on the board
+    def get_sunken_ships(self):
+        return self.sunken_ship_coordinates
