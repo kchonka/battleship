@@ -16,7 +16,7 @@ class AI:
         self.actions = []                           # List of all previous actions the AI made (U, D, L, R)
         self.ship = Ship()                          # Memory object
         self.active_hits = []                       # Ships that have been hit but not sunk yet
-        self.q_table = np.zeros([100,9])            #[[0 for x in range(9)] for y in range(100)]
+        self.q_table = np.zeros([100,5])            #[[0 for x in range(9)] for y in range(100)]
 
     # Returns the board array list (not a Board object) --> calls Board's get_board
     def get_board(self):
@@ -357,64 +357,6 @@ class AI:
                 else:  # Random shot
                     return self.random_shot()
 
-            '''
-            last_pos = self.moves[-1]
-
-            if last_move_state == Cell.HIT:
-                # Add last_pos to active hits:
-                self.active_hits.append(last_pos)
-                # Get all possible actions after a hit
-                possible_actions = self.get_hit_actions(last_pos)
-                # Just choose the first action in the list:
-                action = possible_actions[0]
-                # Get the next position as a result of the above action
-                next_pos = self.board.get_next_position(last_pos, action)
-                # Append next_pos
-                self.moves.append(next_pos)
-                # Return this position
-                return next_pos[0], next_pos[1]
-
-            # Last move resulted in a miss but there are still active hits
-            elif last_move_state == Cell.MISS and self.active_hits:
-                pos = self.active_hits[0]
-                # Get all possible actions after a hit
-                possible_actions = self.get_hit_actions(pos)
-                # Just choose the first action in the list:
-                action = possible_actions[0]
-                # Get the next position as a result of the above action
-                next_pos = self.board.get_next_position(pos, action)
-                # Append next_pos
-                self.moves.append(next_pos)
-                # Return this position
-                return next_pos[0], next_pos[1]
-
-            elif last_move_state == Cell.SUNK:
-                # Remove from active hits
-                for coordinates in sunken_ships:
-                    if coordinates in self.active_hits:
-                        self.active_hits.remove(coordinates)
-
-                # Check if active hits is still not empty:
-                if self.active_hits:
-                    last_pos = self.active_hits[0] # use the first active hit to work with
-                    possible_actions = self.get_hit_actions(last_pos)
-                    # Just choose the first action in the list:
-                    action = possible_actions[0]
-                    # Get the next position as a result of the above action
-                    next_pos = self.board.get_next_position(last_pos, action)
-                    # Append next_pos
-                    self.moves.append(next_pos)
-                    # Return this position
-                    return next_pos[0], next_pos[1]
-                else:   # random shot
-                    return self.random_shot()
-
-            else:
-                return self.random_shot()
-            '''
-
-
-
 
     # Returns a numerical position on the qtable grid corresponding to the row & col
     def get_qtable_pos(self, x, y):
@@ -423,24 +365,16 @@ class AI:
     def get_action_index(self, action):
         action_index = None
 
-        if action == Action.UP1:
+        if action == Action.UP:
             action_index = 0
-        elif action == Action.DOWN1:
+        elif action == Action.DOWN:
             action_index = 1
-        elif action == Action.LEFT1:
+        elif action == Action.LEFT:
             action_index = 2
-        elif action == Action.RIGHT1:
+        elif action == Action.RIGHT:
             action_index = 3
-        elif action == Action.UP2:
-            action_index = 4
-        elif action == Action.DOWN2:
-            action_index = 5
-        elif action == Action.LEFT2:
-            action_index = 6
-        elif action == Action.RIGHT2:
-            action_index = 7
         elif action == Action.HUNT:
-            action_index = 8
+            action_index = 4
 
         return action_index
 
@@ -456,7 +390,7 @@ class AI:
 
     # These are only actions to do when the AI makes an active hit:
     # Searchs up, down, left, and right one space
-    def get_hit_actions(self, cur_pos):
+    def get_actions(self, cur_pos):
         x = cur_pos[0]
         y = cur_pos[1]
 
@@ -465,60 +399,28 @@ class AI:
         if y - 1 > 0:
             new_coordinates = [x, y-1]
             if new_coordinates not in self.moves:
-                possible_actions.append(Action.UP1)
+                possible_actions.append(Action.UP)
 
         if y + 1 < 11:
             new_coordinates = [x, y+1]
             if new_coordinates not in self.moves:
-                possible_actions.append(Action.DOWN1)
+                possible_actions.append(Action.DOWN)
 
         if x - 1 > 0:
             new_coordinates = [x-1, y]
             if new_coordinates not in self.moves:
-                possible_actions.append(Action.LEFT1)
+                possible_actions.append(Action.LEFT)
 
         if x + 1 < 11:
             new_coordinates = [x+1, y]
             if new_coordinates not in self.moves:
-                possible_actions.append(Action.RIGHT1)
+                possible_actions.append(Action.RIGHT)
 
         if not possible_actions:
             possible_actions.append(Action.HUNT)
 
         return possible_actions
 
-    # Takes a pair of coordinates representing a state/cell on the board
-    # Returns a list of all the possible moves: Up, down, left, right
-    def get_explore_actions(self, cur_pos):
-        x = cur_pos[0]
-        y = cur_pos[1]
-
-        possible_actions = [] # List of all possible actions/movable directions
-
-        if y - 2 > 0:
-            new_coordinates = [x, y-2]
-            if new_coordinates not in self.moves:
-                possible_actions.append(Action.UP2)
-
-        if y + 2 < 11:
-            new_coordinates = [x, y+2]
-            if new_coordinates not in self.moves:
-                possible_actions.append(Action.DOWN2)
-
-        if x - 2 > 0:
-            new_coordinates = [x-2, y]
-            if new_coordinates not in self.moves:
-                possible_actions.append(Action.LEFT2)
-
-        if x + 2 < 11:
-            new_coordinates = [x+2, y]
-            if new_coordinates not in self.moves:
-                possible_actions.append(Action.RIGHT2)
-
-        if not possible_actions:
-            possible_actions.append(Action.HUNT)
-
-        return possible_actions
 
     # Helper method used by Q_Learned_AI
     # Takes in a list of possible actions
@@ -528,7 +430,7 @@ class AI:
 
         for action in possible_actions:
             # Find the next pos as a result of taking the above action:
-            next_pos = self.board.get_next_position(last_pos, action)
+            next_pos = self.move_by_one(last_pos, action)
             next_index = self.get_qtable_pos(next_pos[0], next_pos[1])
             action_index = self.get_action_index(action)
 
@@ -541,7 +443,7 @@ class AI:
         max_index = rewards.index(maximum)
         action = actions[max_index]
 
-        next_pos = self.board.get_next_position(last_pos, action)
+        next_pos = self.move_by_one(last_pos, action)
 
         self.moves.append(next_pos)
         self.actions.append(action)
@@ -592,18 +494,17 @@ class AI:
                 # Add last_pos to active hits:
                 self.active_hits.append(last_pos)
                 # Get all possible actions after a hit
-                possible_actions = self.get_hit_actions(last_pos)
+                possible_actions = self.get_actions(last_pos)
                 # Return the row & col that correspond to the greatest reward
                 return self.exploit_environment(last_pos, possible_actions)
 
             # Last move resulted in a miss but there are other active hits
             elif last_move_state == Cell.MISS and self.active_hits:
                 last_pos = self.active_hits[0] # use the first active hit to work with
-                possible_actions = self.get_hit_actions(last_pos)
+                possible_actions = self.get_actions(last_pos)
                 return self.exploit_environment(last_pos, possible_actions)
 
             elif last_move_state == Cell.SUNK:
-
                 # Remove from active hits
                 for coordinates in sunken_ships:
                     if coordinates in self.active_hits:
@@ -612,19 +513,99 @@ class AI:
                 # Check if active hits is still not empty:
                 if self.active_hits:
                     last_pos = self.active_hits[0] # use the first active hit to work with
-                    possible_actions = self.get_hit_actions(last_pos)
-
+                    possible_actions = self.get_actions(last_pos)
                     return self.exploit_environment(last_pos, possible_actions)
 
 
             # else, explore environment
             # This code gets executed if there was a previous MISS
-            possible_actions = self.get_explore_actions(last_pos)
+            possible_actions = self.get_actions(last_pos)
+            # explore
             action = random.choice(possible_actions)
 
             # Find the next pos as a result of taking the above action:
-            next_pos = self.board.get_next_position(last_pos, action)
+            next_pos = self.move_in_direction(action)
             self.actions.append(action)
             self.moves.append(next_pos)
 
             return next_pos[0], next_pos[1]
+
+    # Move by one with the 'action' (up, dowm left, right)
+    # Returns the next coordinates as a result of moving by 1 with the action
+    def move_by_one(self, cur_pos, action):
+        x = cur_pos[0]
+        y = cur_pos[1]
+
+        if action == Action.UP:
+            return [x, y-1]
+        elif action == Action.DOWN:
+            return [x, y+1]
+        elif action == Action.LEFT:
+            return [x-1, y]
+        elif action == Action.RIGHT:
+            return [x+1, y]
+        elif action == Action.HUNT:
+            seed(time.time())
+            x = randint(1, 10)
+            y = randint(1, 10)
+            return [x, y]
+
+    def move_in_direction(self, action):
+        coordinates = self.moves[-1]
+        x = coordinates[0]
+        y = coordinates[1]
+
+        # Move anywhere up
+        if action == Action.UP:
+            room_to_move = y -1
+
+            while coordinates in self.moves:
+                seed(time.time())
+                y = randint(1, room_to_move)
+                coordinates = [x,y]
+                if coordinates not in self.moves:
+                    self.moves.append(coordinates)
+                    return coordinates[0], coordinates[1]
+
+        # Move anywhere down:
+        elif action == Action.DOWN:
+            room_to_move = 10 - y
+
+            while coordinates in self.moves:
+                seed(time.time())
+                y = randint(1, room_to_move)
+                coordinates = [x,y]
+                if coordinates not in self.moves:
+                    self.moves.append(coordinates)
+                    return coordinates[0], coordinates[1]
+
+        # Move anywhere left:
+        elif action == Action.LEFT:
+            room_to_move = x - 1
+
+            while coordinates in self.moves:
+                seed(time.time())
+                x = randint(1, room_to_move)
+                coordinates = [x,y]
+                if coordinates not in self.moves:
+                    self.moves.append(coordinates)
+                    return coordinates[0], coordinates[1]
+
+        # Move anywhere right:
+        elif action == Action.RIGHT:
+            room_to_move = 10 - x
+
+            while coordinates in self.moves:
+                seed(time.time())
+                x = randint(1, room_to_move)
+                coordinates = [x,y]
+                if coordinates not in self.moves:
+                    self.moves.append(coordinates)
+                    return coordinates[0], coordinates[1]
+
+        elif action == Action.HUNT:
+            seed(time.time())
+            x = randint(1, 10)
+            y = randint(1, 10)
+
+            return [x, y]

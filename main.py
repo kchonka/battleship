@@ -424,7 +424,7 @@ while carryOn:
     # If user presses start - make sure that all the board pieces are in the correct place, then start game
     if not setup:
         if AI_turn:
-            
+
             # Q LEARNING AI:
             # Update message box:
             message = "AI's turn"
@@ -474,7 +474,7 @@ while carryOn:
             # Update display:
             board_array = player.get_board()
             update_AI_grid(board_array)
-            '''
+
             # Check if AI wins:
             if player.check_loss():
                 AI_win = True
@@ -489,7 +489,7 @@ while carryOn:
                 AI_turn = False
 
             wait_for(1500)
-
+            '''
         else:
             # Update message box:
             color_message_box()
@@ -583,7 +583,7 @@ if player_win:
     winner_text = winner_font.render(winner_message, True, BLACK)
     winner_rect = winner_text.get_rect(center=winner_box.center)
     screen.blit(winner_text, winner_rect)
-    wait_for(8000)
+    wait_for(6000)
 elif AI_win:
     screen.fill(BLUE)
     winner_font = pygame.font.Font('freesansbold.ttf', 40)
@@ -592,7 +592,7 @@ elif AI_win:
     winner_text = winner_font.render(winner_message, True, BLACK)
     winner_rect = winner_text.get_rect(center=winner_box.center)
     screen.blit(winner_text, winner_rect)
-    wait_for(8000)
+    wait_for(6000)
 
 # End the game
 pygame.quit()

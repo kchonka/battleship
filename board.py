@@ -7,15 +7,11 @@ import random
 import time
 
 class Action(Enum):
-    UP1 = 0
-    DOWN1 = 1
-    LEFT1 = 2
-    RIGHT1 = 3
-    UP2 = 4
-    DOWN2 = 5
-    LEFT2 = 6
-    RIGHT2 = 7
-    HUNT = 8       # take random shot elsewhere
+    UP = 0
+    DOWN = 1
+    LEFT = 2
+    RIGHT = 3
+    HUNT = 4      # take random shot elsewhere
 
 
 class Cell(Enum):
@@ -99,35 +95,6 @@ class Board:
 
         return self.board[x][y]             # Return the updated board state
 
-
-    # Given a current pos (coordinates) and an action to move in,
-    # Returns the next position (new coordinates)
-    def get_next_position(self, cur_pos, action):
-        x = cur_pos[0]
-        y = cur_pos[1]
-
-        if action == Action.UP1:
-            return [x, y-1]
-        elif action == Action.UP2:
-            return [x, y-2]
-        elif action == Action.DOWN1:
-            return [x, y+1]
-        elif action == Action.DOWN2:
-            return [x, y+2]
-        elif action == Action.LEFT1:
-            return [x-1, y]
-        elif action == Action.LEFT2:
-            return [x-2, y]
-        elif action == Action.RIGHT1:
-            return [x+1, y]
-        elif action == Action.RIGHT2:
-            return [x+2, y]
-        elif action == Action.HUNT:
-            seed(time.time())
-            x = randint(1, 10)
-            y = randint(1, 10)
-
-            return [x, y]
 
     def is_game_over(self):
         if self.moves >= 100 or self.sunk == 5:
