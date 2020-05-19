@@ -441,8 +441,8 @@ class AI:
         # Choose the max reward
         maximum = max(rewards)
 
-        if maximum == 0 and last_move_state == Cell.HIT:
-            action = actions[-1]
+        if maximum == 0 and last_move_state == Cell.HIT and self.actions[-1] != Action.HUNT:
+            action = self.actions[-1]
         else:
             max_index = rewards.index(maximum)
             action = actions[max_index]
@@ -495,8 +495,9 @@ class AI:
             # CHOOSE THE NEXT MOVE:
 
             if last_move_state == Cell.HIT:
+                last_coordinates = [last_pos[0], last_pos[1]]
                 # Add last_pos to active hits:
-                self.active_hits.append(last_pos)
+                self.active_hits.append(last_coordinates)
                 # Get all possible actions after a hit
                 possible_actions = self.get_actions(last_pos)
                 # Return the row & col that correspond to the greatest reward
@@ -522,7 +523,7 @@ class AI:
                         possible_actions = self.get_actions(last_pos)
 
                     return self.exploit_environment(last_pos, possible_actions, last_move_state)
-                    
+
             # Last move resulted in a miss but there are other active hits
             elif last_move_state == Cell.MISS and self.active_hits:
                 i = 0

@@ -76,7 +76,7 @@ class Board:
                         x = pair[0]
                         y = pair[1]
                         self.board[x][y] = Cell.SUNK
-                        self.sunken_ship_coordinates.append(pair)
+                        self.sunken_ship_coordinates.append([x,y])
         return sunk
     # Returns the state of the board (Empty, hidden, missed, hit, sunk)
     def get_state(self, row, col):
