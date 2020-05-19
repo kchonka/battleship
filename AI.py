@@ -424,7 +424,7 @@ class AI:
 
     # Helper method used by Q_Learned_AI
     # Takes in a list of possible actions
-    def exploit_environment(self, last_pos, possible_actions):
+    def exploit_environment(self, last_pos, possible_actions, last_move_state):
         rewards = []
         actions = []
 
@@ -440,8 +440,12 @@ class AI:
 
         # Choose the max reward
         maximum = max(rewards)
-        max_index = rewards.index(maximum)
-        action = actions[max_index]
+
+        if maximum == 0 and last_move_state == Cell.HIT:
+            action = actions[-1]
+        else:
+            max_index = rewards.index(maximum)
+            action = actions[max_index]
 
         next_pos = self.move_by_one(last_pos, action)
 
@@ -496,13 +500,7 @@ class AI:
                 # Get all possible actions after a hit
                 possible_actions = self.get_actions(last_pos)
                 # Return the row & col that correspond to the greatest reward
-                return self.exploit_environment(last_pos, possible_actions)
-
-            # Last move resulted in a miss but there are other active hits
-            elif last_move_state == Cell.MISS and self.active_hits:
-                last_pos = self.active_hits[0] # use the first active hit to work with
-                possible_actions = self.get_actions(last_pos)
-                return self.exploit_environment(last_pos, possible_actions)
+                return self.exploit_environment(last_pos, possible_actions, last_move_state)
 
             elif last_move_state == Cell.SUNK:
                 # Remove from active hits
@@ -512,9 +510,33 @@ class AI:
 
                 # Check if active hits is still not empty:
                 if self.active_hits:
+                    i = 0
                     last_pos = self.active_hits[0] # use the first active hit to work with
                     possible_actions = self.get_actions(last_pos)
-                    return self.exploit_environment(last_pos, possible_actions)
+
+                    # If the only action available is to hunt/shoot elsewhere,
+                    # choose the next active position
+                    while Action.HUNT in possible_actions and len(self.active_hits) > i+1:
+                        i += 1
+                        last_pos = self.active_hits[i] # use the first active hit to work with
+                        possible_actions = self.get_actions(last_pos)
+
+                    return self.exploit_environment(last_pos, possible_actions, last_move_state)
+                    
+            # Last move resulted in a miss but there are other active hits
+            elif last_move_state == Cell.MISS and self.active_hits:
+                i = 0
+                last_pos = self.active_hits[i] # use the first active hit to work with
+                possible_actions = self.get_actions(last_pos)
+
+                # If the only action available is to hunt/shoot elsewhere,
+                # choose the next active position
+                while Action.HUNT in possible_actions and len(self.active_hits) > i+1:
+                    i += 1
+                    last_pos = self.active_hits[i] # use the first active hit to work with
+                    possible_actions = self.get_actions(last_pos)
+
+                return self.exploit_environment(last_pos, possible_actions, last_move_state)
 
 
             # else, explore environment
