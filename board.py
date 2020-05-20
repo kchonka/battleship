@@ -31,6 +31,10 @@ class Board:
         self.sunk = 0  # The number of sunken ships
         self.moves = 0 # The number of cells explored / moves taken
         self.sunken_ship_coordinates = [] # List of all the coordinates with "SUNK" status
+        '''self.size = 0
+        self.ship = []
+        self.hits = []
+        self.available_ships = []'''
 
     def reset(self):
         self.board = [[Cell.EMPTY for x in range(WIDTH)] for y in range(HEIGHT)]
@@ -105,3 +109,35 @@ class Board:
     # Returns the ships sunk and their coordinates on the board
     def get_sunken_ships(self):
         return self.sunken_ship_coordinates
+
+    '''# This is needed for Monte Carlo
+    class BoardSimulation(Board):
+
+    def __init__(self, attack_board):
+        Board.__init__(self, attack_board.size)
+        self.attack_board = attack_board
+        self.board = self.attack_board.get_board()
+        self.square_states = self.board.get_state()
+
+    def simulate_ship(self):
+        # Select a random ship length that hasnt been destroyed yet, and place it onto the board at a valid location
+        ind = np.random.choice(np.nonzero(self.attack_board.ship_counts)[0])
+        leng = self.attack_board.available_ships[ind]
+
+        # Check if the ship intersects and existing hit, if it does then we want to emphasis it to the algorithm
+        intersection = 0
+        for coordin in self.ship[0]:
+            if coordin in self.attack_board.hits:
+                intersection += 1
+        if intersection == len(self.ship[0]):
+            intersection = 0
+
+        # Make sure to remove all non ship squares to not mess with frequencies
+        sim_board = self.get_board()
+        # sim_board[sim_board != self.square_states[Cell.MISS]] == 0
+
+        return sim_board, intersection
+
+    # Resets the simulation
+    def update_sim(self, attack_board):
+        self.__init__(attack_board)'''
