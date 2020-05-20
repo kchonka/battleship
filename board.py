@@ -1,3 +1,5 @@
+# Kat Chonka & Denysse Cunza
+
 # Class representing a board object
 # Both the player and AI classes will use this class as their board
 
@@ -36,6 +38,7 @@ class Board:
         self.hits = []
         self.available_ships = []'''
 
+    # Resets the board
     def reset(self):
         self.board = [[Cell.EMPTY for x in range(WIDTH)] for y in range(HEIGHT)]
 

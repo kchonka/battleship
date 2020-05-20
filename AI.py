@@ -1,3 +1,5 @@
+# Kat Chonka & Denysse Cunza
+
 # Class representing an AI object
 
 from ship import Ship, Direction
@@ -16,7 +18,7 @@ class AI:
         self.actions = []                           # List of all previous actions the AI made (U, D, L, R)
         self.ship = Ship()                          # Memory object
         self.active_hits = []                       # Ships that have been hit but not sunk yet
-        self.q_table = np.zeros([100,5])            #[[0 for x in range(9)] for y in range(100)]
+        self.q_table = np.zeros([100,5])            #[ Q Table
         '''self. move_simulation = []               # This is the number of moves that it has to simulate
         self.priority = 5                           # This is the priority given to simulations that intersect hits'''
 
@@ -40,6 +42,7 @@ class AI:
         else:
             return True
 
+    # Baseline method for AI ship placement
     def random_placement(self):
         carrier = []
         cruiser = []
@@ -263,7 +266,7 @@ class AI:
         percentages = np.mean(simulations, axis=0)
 
         return percentages
-        
+
     # This allows for the AI to run the game for testing
     def run_testing(self):
         res = self.board.attack_board()
@@ -273,7 +276,7 @@ class AI:
             count += 1
             s, done = .monte_carlo(res)
         return np.count_nonzero(s.get_board() == 0)
-        
+
     # Uses the MC algorithm to predict move against the player and moves
     def make_move(self)
         return self.monte_carlo(self.board.attack_board)'''
@@ -609,6 +612,8 @@ class AI:
             y = randint(1, 10)
             return [x, y]
 
+    # Performs action by moving into that direction with any number of steps
+    # Returns new coordinates
     def move_in_direction(self, action):
         coordinates = self.moves[-1]
         x = coordinates[0]

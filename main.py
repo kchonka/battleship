@@ -1,3 +1,5 @@
+# Kat Chonka & Denysse Cunza
+
 # Main Battleship game file
 # This file contains the UI display code along with the game logic.
 import pygame

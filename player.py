@@ -1,3 +1,5 @@
+# Kat Chonka & Denysse Cunza
+
 # Class that represents the user player
 
 from board import Board, Cell
@@ -35,6 +37,7 @@ class Player:
         else:
             return True
 
+    # Adds a ship to the board with the 'name' and list of coordinates
     def add_ship(self, name, coordinates):
         self.board.add_ship(name, coordinates)
 
