@@ -20,6 +20,16 @@ numpy~=1.18.1
 ## Usage
 To run:	`python3 main.py`
 
+When the game start, drag all the ships (yellow rectangles) to the board. Double click to rotate.
+
+If ready, press 'start'. Take turns hitting ships until all 5 ships are sunk.
+
+Guide: Orange = Hit, Red = Sink, Green = Miss
 
 ## Note
-** Currently the main.py file is set up to run the Q-Learning AI. The code for the random AI is commented out right below it. 
+** Currently the main.py file is set up to run the Q-Learning AI. The code for the random AI is commented out right below it.
+
+## Visualization
+
+![Battleship Board](https://github.com/kchonka/battleship/blob/master/visualization.png)
+ 
