@@ -17,8 +17,8 @@ class AI:
         self.ship = Ship()                          # Memory object
         self.active_hits = []                       # Ships that have been hit but not sunk yet
         self.q_table = np.zeros([100,5])            #[[0 for x in range(9)] for y in range(100)]
-        '''self. move_simulation = []               #this is the number of moves that it has to simulate
-        self.priority = 5                           #this is the priority given to simulations that intersect hits'''
+        '''self. move_simulation = []               # This is the number of moves that it has to simulate
+        self.priority = 5                           # This is the priority given to simulations that intersect hits'''
 
     # Returns the board array list (not a Board object) --> calls Board's get_board
     def get_board(self):
