@@ -31,7 +31,7 @@ class Board:
         self.sunk = 0  # The number of sunken ships
         self.moves = 0 # The number of cells explored / moves taken
         self.sunken_ship_coordinates = [] # List of all the coordinates with "SUNK" status
-        '''self.size = 0
+        '''self.size = 0              # For Monte Carlo
         self.ship = []
         self.hits = []
         self.available_ships = []'''
