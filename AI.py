@@ -17,6 +17,8 @@ class AI:
         self.ship = Ship()                          # Memory object
         self.active_hits = []                       # Ships that have been hit but not sunk yet
         self.q_table = np.zeros([100,5])            #[[0 for x in range(9)] for y in range(100)]
+        '''self. move_simulation = []               #this is the number of moves that it has to simulate
+        self.priority = 5                           #this is the priority given to simulations that intersect hits'''
 
     # Returns the board array list (not a Board object) --> calls Board's get_board
     def get_board(self):
@@ -241,6 +243,40 @@ class AI:
         self.board.add_ship("submarine", submarine)
         self.board.add_ship("destroyer", destroyer)
 
+    '''# This is the implementation of the Monte Carlo Algorithm
+    def monte_carlo(self, out_path)
+        simulations = []
+
+        for i in range(self.move_simulation):
+            self.board.simulate_board.update(self.board.get_state())
+            brd, intersection = self.board.simulate_board.simulate_ship()
+
+            # If we intersect a hit take account priority and overlap
+            if intersection:
+                for i in range(self.priority):
+                    for i in range(intersection):
+                        self.simulations.append(brd)
+            self.simulations.append(brd)
+
+        # Mean the ship simulations down the stacked axis to calculate percentages
+        simulations = np.array(simulations)
+        percentages = np.mean(simulations, axis=0)
+
+        return percentages
+        
+    # This allows for the AI to run the game for testing
+    def run_testing(self):
+        res = self.board.attack_board()
+        done_testing = False
+        count = 0
+        while not done:
+            count += 1
+            s, done = .monte_carlo(res)
+        return np.count_nonzero(s.get_board() == 0)
+        
+    # Uses the MC algorithm to predict move against the player and moves
+    def make_move(self)
+        return self.monte_carlo(self.board.attack_board)'''
 
     # Get attacked BY the player opponent
     # Returns the new state at board[row][col]
